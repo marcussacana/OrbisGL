@@ -227,3 +227,7 @@ artifacts/
 #lfs
 hooks/**
 lfs/**
+
+
+#OrbisGL Debug Folder
+!/OrbisGL/Debug
