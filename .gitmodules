@@ -1,0 +1,6 @@
+[submodule "ImageSharp"]
+	path = ImageSharp
+	url = https://github.com/marcussacana/ImageSharp.git
+[submodule "SharpGLES"]
+	path = SharpGLES
+	url = https://github.com/marcussacana/SharpGLES.git
