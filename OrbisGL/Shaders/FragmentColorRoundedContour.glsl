@@ -16,7 +16,7 @@ uniform vec4 VisibleRect;
 #define iResolution Resolution
 #define fragCoord Resolution * UV
 
-//stolen from https://iquilezles.org/articles/distfunctions
+//based from https://www.shadertoy.com/view/ldfSDj
 float udRoundBox( vec2 p, vec2 b, float r )
 {
     return length(max(abs(p)-b+r,0.0))-r;
