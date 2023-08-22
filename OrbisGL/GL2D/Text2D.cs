@@ -232,5 +232,11 @@ namespace OrbisGL.GL2D
 
             base.Draw(Tick);
         }
+
+        public override void Dispose()
+        {
+            FontTexture?.Dispose();
+            base.Dispose();
+        }
     }
 }
