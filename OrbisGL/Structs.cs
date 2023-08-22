@@ -1,5 +1,7 @@
-﻿using System;
+﻿using OrbisGL.GL;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,6 +52,36 @@ namespace OrbisGL
         public Controls.Control Down;
         public Controls.Control Left;
         public Controls.Control Right;
+    }
+
+    public struct SpriteFrame
+    {
+        /// <summary>
+        /// Frame Coordinates in Target Texture
+        /// </summary>
+        public Rectangle Coordinates;
+        /// <summary>
+        /// Frame Delta X Offset
+        /// </summary>
+        public int X;
+        /// <summary>
+        /// Frame Delta Y Offset
+        /// </summary>
+        public int Y;
+    }
+
+    [DebuggerDisplay("{Name}")]
+    public struct SpriteInfo
+    {
+        /// <summary>
+        /// Sprite Animation Name
+        /// </summary>
+        public string Name;
+
+        /// <summary>
+        /// Holds each frame of the given sprite
+        /// </summary>
+        public SpriteFrame[] Frames;
     }
 
     internal struct ShaderInfo

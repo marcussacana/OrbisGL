@@ -13,7 +13,7 @@ namespace OrbisGL.GL2D
     /// </summary>
     public class Sprite2D : GLObject2D
     {
-        GLObject2D Target;
+        public GLObject2D Target { get; private set; }
 
         int _FrameDelay;
 
@@ -136,7 +136,7 @@ namespace OrbisGL.GL2D
         /// <summary>
         /// Set the next frame visible
         /// </summary>
-        public void NextFrame()
+        public virtual int NextFrame()
         {
             if (Width == 0)
                 throw new ArgumentOutOfRangeException(nameof(Width));
@@ -150,8 +150,12 @@ namespace OrbisGL.GL2D
             if (Frames.Length != 0 && CurrentFrame >= Frames.Length)
                 CurrentFrame = 0;
 
+            var DrawFrame = CurrentFrame;
+
             SetVisibleRectangle(Frames[CurrentFrame]);
             CurrentFrame++;
+
+            return DrawFrame;
         }
 
 
