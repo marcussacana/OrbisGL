@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_Win|x64' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug_Win' ">
     <OutputPath>bin\x64\Debug_Win\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -119,6 +119,7 @@
     <Compile Include="GL2D\RichText2D.cs" />
     <Compile Include="GL2D\RoundedRectangle2D.cs" />
     <Compile Include="GL2D\Sprite2D.cs" />
+    <Compile Include="GL2D\SpriteAtlas2D.cs" />
     <Compile Include="GL2D\Text2D.cs" />
     <Compile Include="GL2D\Texture2D.cs" />
     <Compile Include="GL2D\Triangle2D.cs" />
@@ -187,6 +188,7 @@
     <EmbeddedResource Include="Shaders\FragmentColorUV.glsl" />
     <EmbeddedResource Include="Shaders\FragmentColorRoundedTriangle.glsl" />
     <EmbeddedResource Include="Shaders\Shaders.bin" />
+    <EmbeddedResource Include="Shaders\FragmentTexture.glsl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

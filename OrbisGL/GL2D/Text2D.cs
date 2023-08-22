@@ -14,6 +14,8 @@ namespace OrbisGL.GL2D
     {
         Texture FontTexture;
 
+        bool VertexInitialized = false;
+
         public GlyphInfo[] GlyphsInfo { get; private set; } = null;
         public string Text { get; private set; } = null;
         public FontFaceHandler Font { get; set; }
@@ -54,6 +56,8 @@ namespace OrbisGL.GL2D
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);
             Program.AddBufferAttribute("uv", AttributeType.Float, AttributeSize.Vector2);
+
+            BlendMode = BlendMode.ALPHA;
 
             FontTexture = new Texture(true);
             this.Font = Font;
@@ -161,12 +165,17 @@ namespace OrbisGL.GL2D
 
             FontTexture.SetData(Width, Height, Buffer, PixelFormat.RGBA);
 
+            if (!VertexInitialized)
+                InternalRefreshVertex();
+
             if (Resized)
                 ClearVisibleRectangle();
         }
 
         private void InternalRefreshVertex()
         {
+
+            VertexInitialized = true;
 
             //   0 ---------- 1
             //   |            |

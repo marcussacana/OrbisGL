@@ -307,6 +307,13 @@ namespace GLTest
                 OnKeyUp.Invoke(this, new KeyboardEventArgs(KeyMap[Key], OrbisGL.IME_KeycodeState.VALID, Char));
             }
         }
+
+        public void SetSize(int width, int height)
+        {
+            Size = new Size(width, height);
+
+            GLApplication.ChangeResolution(width, height);
+        }
 #endif
     }
 }

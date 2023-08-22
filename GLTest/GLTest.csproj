@@ -13,25 +13,6 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ORBIS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;ORBIS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_Win|x64' ">
     <OutputPath>bin\x64\Debug_Win\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
@@ -41,6 +22,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\FridayNightFunkin\main\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -96,21 +80,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ImageSharp\src\ImageSharp\ImageSharp.csproj">
-      <Project>{3716a6c7-74ed-4288-81e9-c58dedf5092e}</Project>
-      <Name>ImageSharp</Name>
+    <EmbeddedResource Include="cat_sprite.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\FridayNightFunkin\main\main\main.csproj">
+      <Project>{7071404e-a6d9-4345-9616-d74ae2f38148}</Project>
+      <Name>main</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OrbisGL\OrbisGL.csproj">
+    <ProjectReference Include="..\..\..\..\FridayNightFunkin\main\OrbisGL\OrbisGL\OrbisGL.csproj">
       <Project>{7ef00bd1-a3c4-45fb-bf5c-44db18f28ec9}</Project>
       <Name>OrbisGL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SharpGLES\SharpGLES\SharpGLES.csproj">
-      <Project>{cf294894-f871-4cc4-b947-feed7967a49e}</Project>
-      <Name>SharpGLES</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="cat_sprite.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

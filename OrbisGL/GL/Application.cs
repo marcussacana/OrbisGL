@@ -440,8 +440,8 @@ namespace OrbisGL.GL
             ProcessEvents(Ticks);
             Draw(Ticks);
         }
-#endif
-        bool GLReady = false;
+#endif        
+
         public virtual void Draw(long Tick)
         {
             if (ClearColor != null)
@@ -449,21 +449,7 @@ namespace OrbisGL.GL
                 GLES20.ClearColor(ClearColor.RedF, ClearColor.GreenF, ClearColor.BlueF, 1);
                 GLES20.Clear(GLES20.GL_COLOR_BUFFER_BIT);
             }
-
-            if (!GLReady)
-            {
-                //GLES20.BlendEquation(GLES20.GL_FUNC_ADD);
-
-                //GLES20.BlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-                GLES20.BlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-                GLES20.Enable(GLES20.GL_BLEND);
-
-                //GLES20.Disable(GLES20.GL_CULL_FACE);
-                GLReady = true;
-            }
-
-
-
+                
             foreach (var Object in Objects.ToArray())
             {
                 if (Object is Control Controller)
@@ -516,8 +502,28 @@ namespace OrbisGL.GL
         
 #if !ORBIS
         public void SwapBuffers() => GLDisplay?.SwapBuffers();
-#endif
+        public void ChangeResolution(int Width, int Height)
+        {
+            this.Width = Width;
+            this.Height = Height;
 
+            Coordinates2D.SetSize(Width, Height);
+
+            foreach (var Object in _Objects)
+            {
+                if (Object is Control Controller)
+                    Controller.Invalidate();
+
+                if (Object is GLObject2D Obj2D)
+                    Obj2D.RefreshVertex();
+            }
+
+            GLDisplay.Dispose();
+            GLDisplay = new EGLDisplay(Handler, Width, Height);
+
+            GLES20.Viewport(0, 0, Width, Height);
+        }
+#endif
         public void Dispose()
         {
             foreach (var Object in Objects)

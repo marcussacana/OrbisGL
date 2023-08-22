@@ -21,15 +21,18 @@ namespace OrbisGL.GL2D
         }
 
         public Texture Texture { get; set; }
+
         public Texture2D()
         {
-            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentFont"));
+            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentTexture"));
             Program = new GLProgram(hProgram);
 
             TextureUniformLocation = GLES20.GetUniformLocation(hProgram, "Texture");
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);
             Program.AddBufferAttribute("uv", AttributeType.Float, AttributeSize.Vector2);
+
+            BlendMode = BlendMode.ALPHA;
 
             RefreshVertex();
         }

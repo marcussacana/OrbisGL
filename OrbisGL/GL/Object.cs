@@ -10,6 +10,10 @@ namespace OrbisGL.GL
 {
     public class GLObject : IRenderable
     {
+        private static BlendMode CurrentBlendMode = BlendMode.DISABLED;
+
+        protected BlendMode BlendMode = BlendMode.ADDITIVE;
+
         private bool BufferInvalidated = true;
         
         public GLProgram Program { get; protected set; }
@@ -233,6 +237,27 @@ namespace OrbisGL.GL
             GLES20.BindBuffer(GLES20.GL_ARRAY_BUFFER, GLArrayBuffer);
 
             Program.ApplyAttributes();
+
+            if (CurrentBlendMode != BlendMode)
+            {
+                CurrentBlendMode = BlendMode;
+
+                switch (BlendMode)
+                {
+                    case BlendMode.ADDITIVE:
+                        GLES20.BlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+                        GLES20.Enable(GLES20.GL_BLEND);
+                        break;
+                    case BlendMode.ALPHA:
+                        GLES20.BlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+                        GLES20.Enable(GLES20.GL_BLEND);
+                        break;
+                    case BlendMode.DISABLED:
+                        GLES20.Disable(GLES20.GL_BLEND);
+                        break;
+                }
+
+            }
 
             if (GLIndexBuffer != 0)
             {

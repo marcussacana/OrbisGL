@@ -43,6 +43,14 @@ namespace OrbisGL.GL
             GLES20.BindTexture(TextureType, TextureID);
         }
 
+
+        /// <summary>
+        /// Set the Texture from raw pixel data
+        /// </summary>
+        /// <param name="Width">Texture Width</param>
+        /// <param name="Height">Texture Height</param>
+        /// <param name="Data">Pixel Data</param>
+        /// <param name="Format">Pixel Data Format</param>
         public unsafe void SetData(int Width, int Height, byte[] Data, PixelFormat Format)
         {
             Bind(Active());

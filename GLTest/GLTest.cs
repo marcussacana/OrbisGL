@@ -1,4 +1,6 @@
-﻿using OrbisGL;
+﻿using Newtonsoft.Json;
+using Orbis;
+using OrbisGL;
 using OrbisGL.Controls;
 using OrbisGL.Debug;
 using OrbisGL.GL;
@@ -26,7 +28,7 @@ namespace GLTest
             InitializeComponent();
 
             GLControl = new GLControl(1280, 720);
-            this.Controls.Add(GLControl);
+            Controls.Add(GLControl);
         }
 #endif
 const string Vertex =
@@ -536,6 +538,34 @@ void main(void) {
                     Obj2D.SetZoom(Zoom);
                 }
             }
+#endif
+        }
+
+
+        SongPlayer SP;
+
+        private void button23_Click(object sender, EventArgs e)
+        {
+#if !ORBIS
+            FormBorderStyle = FormBorderStyle.None;
+            Size = new System.Drawing.Size(1920, 1080);
+
+            WindowState = FormWindowState.Maximized;
+
+            GLControl.SetSize(Size.Width, Size.Height);
+
+            panel1.Visible = false;
+
+            var SJ = File.ReadAllText("assets\\preload\\data\\bopeebo\\bopeebo.json");
+            var SI = JsonConvert.DeserializeObject<SongInfo>(SJ);
+
+            SP = new SongPlayer(SI);
+
+            SP.Load((i) =>
+            {
+                if (SP.Loaded)
+                    GLControl.GLApplication.AddObject(SP);
+            });
 #endif
         }
     }

@@ -20,6 +20,13 @@ namespace OrbisGL
         ClosedLine = GLES20.GL_LINE_LOOP
     }
 
+    public enum BlendMode
+    {
+        ADDITIVE,
+        ALPHA,
+        DISABLED
+    }
+
     public enum AttributeType : int
     {
         Int = GLES20.GL_INT,
