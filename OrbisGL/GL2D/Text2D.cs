@@ -143,7 +143,7 @@ namespace OrbisGL.GL2D
 
             if (Text == null)
             {
-                FontTexture.SetData(1, 1, new byte[4], PixelFormat.RGBA);
+                FontTexture.SetData(1, 1, new byte[4], PixelFormat.RGBA, true);
                 GlyphsInfo = null;
                 return;
             }
@@ -163,7 +163,7 @@ namespace OrbisGL.GL2D
 
             FreeType.RenderText(Buffer, Width, Height, Text, Font, RGBColor.White);
 
-            FontTexture.SetData(Width, Height, Buffer, PixelFormat.RGBA);
+            FontTexture.SetData(Width, Height, Buffer, PixelFormat.RGBA, true);
 
             if (!VertexInitialized)
                 InternalRefreshVertex();

@@ -510,7 +510,7 @@ void main(void) {
             var Cat = ResLoader.GetResourceData(Assembly.GetExecutingAssembly(), "cat_sprite");
 
             Texture Tex = new Texture(true);
-            Tex.SetImage(Cat, PixelFormat.RGBA);
+            Tex.SetImage(Cat, PixelFormat.RGBA, true);
 
             Texture2D TexObj = new Texture2D();
             TexObj.Texture = Tex;

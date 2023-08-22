@@ -63,8 +63,9 @@ namespace OrbisGL.GL2D
         /// </summary>
         /// <param name="Document">An Adobe Animate Texture Atlas Info</param>
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
+        /// <param name="EnableFiltering">Enables texture Linear filtering</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
-        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile)
+        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering)
         {
             var TexturePath = Document.DocumentElement.GetAttribute("imagePath");
 
@@ -96,7 +97,7 @@ namespace OrbisGL.GL2D
 
                 SpriteTex.Texture?.Dispose();
                 SpriteTex.Texture = new Texture(true);
-                SpriteTex.Texture.SetImage(Buffer.ToArray(), PixelFormat.RGBA);
+                SpriteTex.Texture.SetImage(Buffer.ToArray(), PixelFormat.RGBA, EnableFiltering);
             }
             finally {
                 Buffer.Dispose();

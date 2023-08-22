@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Configuration;
 using SharpGLES;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -51,7 +52,7 @@ namespace OrbisGL.GL
         /// <param name="Height">Texture Height</param>
         /// <param name="Data">Pixel Data</param>
         /// <param name="Format">Pixel Data Format</param>
-        public unsafe void SetData(int Width, int Height, byte[] Data, PixelFormat Format)
+        public unsafe void SetData(int Width, int Height, byte[] Data, PixelFormat Format, bool EnableFiltering)
         {
             Bind(Active());
 
@@ -61,17 +62,27 @@ namespace OrbisGL.GL
             fixed (byte* pData = Data)
             {
                 GLES20.TexImage2D(TextureType, 0, (int)Format, Width, Height, 0, (int)Format, GLES20.GL_UNSIGNED_BYTE, new IntPtr(pData));
-                GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-                GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+                
+                if (EnableFiltering)
+                {
+                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
+                    GLES20.GenerateMipmap(TextureType);
+                } 
+                else
+                {
+                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+                }
+
+                //[WIP] TEST COMPRESSION SUPPORT IN PS4
+                //var Formats = GLES20.GetCompressFormats();
+                //System.Diagnostics.Debug.Assert(Formats != null);
             }
         }
 
-        /// <summary>
-        /// Set the Texture from common image format (.png, .jpg, .bmp)
-        /// WARNING - SLOW METHOD, NOT RECOMMENDED
-        /// </summary>
         [Obsolete("Slow Method, use SetData instead", false)]
-        public void SetImage(byte[] Data, PixelFormat TextureFormat)
+        public void SetImage(byte[] Data, PixelFormat TextureFormat, bool EnableFiltering)
         {
             int Width, Height;
             byte[] Buffer;
@@ -96,7 +107,7 @@ namespace OrbisGL.GL
                     throw new Exception("Unexpected Pixel Format");
             }
 
-            SetData(Width, Height, Buffer, TextureFormat);
+            SetData(Width, Height, Buffer, TextureFormat, EnableFiltering);
         }
 
         /// <summary>
