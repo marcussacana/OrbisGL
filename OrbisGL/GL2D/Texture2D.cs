@@ -20,6 +20,10 @@ namespace OrbisGL.GL2D
             }
         }
 
+        /// <summary>
+        /// Get or Set the texture instance, 
+        /// if is the first set or the new texture size has changed, you must call <see cref="RefreshVertex"/>
+        /// </summary>
         public Texture Texture { get; set; }
 
         public Texture2D()

@@ -13,9 +13,44 @@ namespace OrbisGL.GL2D
     {
         Sprite2D SpriteView = new Sprite2D(new Texture2D());
 
+        /// <summary>
+        /// Get or Set the loaded sprite sheet texture instance
+        /// </summary>
+        public Texture SpriteSheet
+        {
+            get => ((Texture2D)SpriteView.Target).Texture;
+            set
+            {
+                ((Texture2D)SpriteView.Target).Texture = value;
+                ((Texture2D)SpriteView.Target).RefreshVertex();
+            }
+        }
+
         public SpriteAtlas2D()
         {
             AddChild(SpriteView);
+        }
+
+        /// <summary>
+        /// Creates and load a SpriteAtlas2D Instance
+        /// </summary>
+        /// <param name="Document">An Adobe Animate texture atlas info</param>
+        /// <param name="SpriteSheet">An texture compatible with the given texture atlas info</param>
+        public SpriteAtlas2D(XmlDocument Document, Texture SpriteSheet) : this()
+        {
+            LoadSprite(Document, SpriteSheet);
+        }
+
+        /// <summary>
+        /// Creates and load a SpriteAtlas2D Instance
+        /// </summary>
+        /// <param name="Document">An Adobe Animate texture atlas info</param>
+        /// <param name="LoadFile">A function to load the texture data from the given filename</param>
+        /// <param name="EnableFiltering">Enables texture Linear filtering</param>
+        /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
+        public SpriteAtlas2D(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering) : this()
+        {
+            LoadSprite(Document, LoadFile, EnableFiltering);
         }
 
         private Vector2[] FrameOffsets;
@@ -36,7 +71,7 @@ namespace OrbisGL.GL2D
             if (Name == CurrentSprite)
                 return true;
 
-            var Animation = Sprites.Where(x => x.Name.ToLowerInvariant() == Name.ToLowerInvariant());
+            var Animation = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == Name.ToLowerInvariant().Trim());
             if (!Animation.Any())
                 return false;
 
@@ -61,7 +96,7 @@ namespace OrbisGL.GL2D
         /// <summary>
         /// Load Sprite Sheet to the <see cref="Sprites"/>
         /// </summary>
-        /// <param name="Document">An Adobe Animate Texture Atlas Info</param>
+        /// <param name="Document">An Adobe Animate texture atlas info</param>
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
         /// <param name="EnableFiltering">Enables texture Linear filtering</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
@@ -76,7 +111,7 @@ namespace OrbisGL.GL2D
                 throw new FileNotFoundException("Failed to Open the Texture");
             }
 
-            var SpriteTex = (Texture2D)SpriteView.Target;
+            Texture SpriteTex = new Texture(true);
 
             MemoryStream Buffer = null;
 
@@ -95,12 +130,32 @@ namespace OrbisGL.GL2D
                     Stream.Dispose();
                 }
 
-                SpriteTex.Texture?.Dispose();
-                SpriteTex.Texture = new Texture(true);
-                SpriteTex.Texture.SetImage(Buffer.ToArray(), PixelFormat.RGBA, EnableFiltering);
+                SpriteTex.SetImage(Buffer.ToArray(), PixelFormat.RGBA, EnableFiltering);
             }
             finally {
                 Buffer.Dispose();
+            }
+
+            LoadSprite(Document, SpriteTex);
+        }
+
+        /// <summary>
+        /// Load Sprite Sheet to the <see cref="Sprites"/>
+        /// </summary>
+        /// <param name="Document">An Adobe Animate texture atlas info</param>
+        /// <param name="SpriteSheet">An texture compatible with the given texture atlas info</param>
+        public void LoadSprite(XmlDocument Document, Texture SpriteSheet)
+        {
+            var SpriteTex = (Texture2D)SpriteView.Target;
+
+            if (SpriteSheet == null && SpriteTex.Texture == null)
+                throw new ArgumentNullException(nameof(SpriteSheet));
+
+            if (SpriteSheet != null)
+            {
+                SpriteTex.Texture?.Dispose();
+                SpriteTex.Texture = SpriteSheet;
+                SpriteTex.RefreshVertex();
             }
 
             var Frames = Document.DocumentElement.GetElementsByTagName("SubTexture");
@@ -118,8 +173,7 @@ namespace OrbisGL.GL2D
                     var FirstFrame = Anim.First();
 
                     SpriteInfo Info = new SpriteInfo();
-                    Info.Name = FirstFrame.Attributes["name"].Value;
-                    Info.Name = Info.Name.Substring(0, Info.Name.Length - 4);
+                    Info.Name = GetGroupName(FirstFrame);
 
                     List<SpriteFrame> SpriteFrames = new List<SpriteFrame>();
                     foreach (var Frame in Anim.OrderBy(x => GetNumberSufix(x)))
@@ -140,7 +194,7 @@ namespace OrbisGL.GL2D
                 foreach (var Frame in Frames.Cast<XmlNode>())
                 {
                     SpriteInfo Info = new SpriteInfo();
-                    Info.Name = Frame.Attributes["name"].Value;
+                    Info.Name = Frame.Attributes["name"].Value.Trim();
 
                     SpriteFrame FrameInfo = LoadFrameInfo(Frame);
 
@@ -195,27 +249,40 @@ namespace OrbisGL.GL2D
 
         private bool IsNumberSufix(XmlNode x)
         {
-            var Name = x.Attributes["name"].Value;
-
-            if (Name == null)
-                return false;
-
-            return Name.Length >= 4 && int.TryParse(Name.Substring(Name.Length - 4), out _);
+            return GetNumberSufixString(x) != null;
         }
 
         private int GetNumberSufix(XmlNode x)
         {
-            if (!IsNumberSufix(x))
-                return 0;
+            return int.Parse(GetNumberSufixString(x));
+        }
 
-            var Name = x.Attributes["name"].Value;
+        private string GetNumberSufixString(XmlNode x)
+        {
+            var Name = x.Attributes["name"].Value.Trim();
 
-            return int.Parse(Name.Substring(Name.Length - 4));
+            if (Name == null)
+                return null;
+
+            string NumberSufix = string.Empty;
+            while (Name.Length > 0 && char.IsNumber(Name.Last()))
+            {
+                NumberSufix = Name.Last() + NumberSufix;
+                Name = Name.Substring(0, Name.Length - 1);
+            }
+
+            return NumberSufix;
         }
 
         public void NextFrame()
         {
             var FrameID = SpriteView.NextFrame();
+            SpriteView.Position = -FrameOffsets[FrameID];
+        }
+
+        public void SetCurrentFrame(int FrameID)
+        {
+            SpriteView.SetCurrentFrame(FrameID);
             SpriteView.Position = -FrameOffsets[FrameID];
         }
 
@@ -226,7 +293,9 @@ namespace OrbisGL.GL2D
             if (FrameName == null)
                 return null;
 
-            return FrameName.Substring(0, FrameName.Length - 4);
+            var Sufix = GetNumberSufixString(x);
+
+            return FrameName.Substring(0, FrameName.Length - Sufix.Length).Trim();
         }
     }
 }

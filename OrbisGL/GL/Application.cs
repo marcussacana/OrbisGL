@@ -171,7 +171,7 @@ namespace OrbisGL.GL
 
             }
         }
-        public GamepadListener Dualshock { get; private set; } = null;
+        public GamepadListener Gamepad { get; private set; } = null;
 
         private bool LeftAnalogCentered = true;
         private bool DualshockEnabled = false;
@@ -187,9 +187,9 @@ namespace OrbisGL.GL
                 UserService.GetInitialUser(out UserID);
             }
 
-            Dualshock = new GamepadListener(UserID);
+            Gamepad = new GamepadListener(UserID);
 
-            Dualshock.OnButtonDown += (sender, args) =>
+            Gamepad.OnButtonDown += (sender, args) =>
             {
                 foreach (var Child in ControllersSnaptshot.Reverse())
                 {
@@ -200,7 +200,7 @@ namespace OrbisGL.GL
                 }
             };
 
-            Dualshock.OnButtonUp += (sender, args) =>
+            Gamepad.OnButtonUp += (sender, args) =>
             {
                 foreach (var Child in ControllersSnaptshot.Reverse())
                 {
@@ -213,7 +213,7 @@ namespace OrbisGL.GL
 
             if (Settings.LeftAnalogAsPad)
             {
-                Dualshock.OnLeftStickMove += (sender, args) =>
+                Gamepad.OnLeftStickMove += (sender, args) =>
                 {
                     var Offset = args.CurrentOffset;
 
@@ -242,7 +242,7 @@ namespace OrbisGL.GL
 
             if (Settings.Mouse == VirtualMouse.Touchpad)
             {
-                MouseDriver = new TouchpadMouse(Dualshock);
+                MouseDriver = new TouchpadMouse(Gamepad);
             }
 
             Control.EnableSelector = Settings.PadAsSelector;
@@ -403,7 +403,7 @@ namespace OrbisGL.GL
 
 #if ORBIS
             KeyboardDriver?.RefreshData();
-            Dualshock?.RefreshData();
+            Gamepad?.RefreshData();
 #endif
         }
 
