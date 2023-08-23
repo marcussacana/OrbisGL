@@ -1,7 +1,6 @@
 ﻿using OrbisGL.GL;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -9,9 +8,25 @@ using System.Xml;
 
 namespace OrbisGL.GL2D
 {
+
+    /// <summary>
+    /// A class that parses Adobe Animate sprite sheet and reproduce it.
+    /// </summary>
     public class SpriteAtlas2D : GLObject2D
     {
         Sprite2D SpriteView = new Sprite2D(new Texture2D());
+
+        private Vector2[] FrameOffsets;
+
+        /// <summary>
+        /// Get a list of all sprites available
+        /// </summary>
+        public SpriteInfo[] Sprites { get; private set; } = null;
+
+        /// <summary>
+        /// Get the Active sprite group name
+        /// </summary>
+        public string CurrentSprite { get; private set; }
 
         /// <summary>
         /// Get or Set the loaded sprite sheet texture instance
@@ -53,10 +68,6 @@ namespace OrbisGL.GL2D
             LoadSprite(Document, LoadFile, EnableFiltering);
         }
 
-        private Vector2[] FrameOffsets;
-
-        public string CurrentSprite { get; private set; }
-
         /// <summary>
         /// Select an sprite animation with the given name
         /// </summary>
@@ -90,8 +101,6 @@ namespace OrbisGL.GL2D
             SpriteView.SetCurrentFrame(0);
             return true;
         }
-
-        public SpriteInfo[] Sprites { get; private set; } = null;
 
         /// <summary>
         /// Load Sprite Sheet to the <see cref="Sprites"/>
@@ -167,46 +176,52 @@ namespace OrbisGL.GL2D
             List<SpriteInfo> Sprites = new List<SpriteInfo>();
 
             if (Groupable)
-            {
-                foreach (var Anim in Frames.Cast<XmlNode>().GroupBy(GetGroupName))
-                {
-                    var FirstFrame = Anim.First();
-
-                    SpriteInfo Info = new SpriteInfo();
-                    Info.Name = GetGroupName(FirstFrame);
-
-                    List<SpriteFrame> SpriteFrames = new List<SpriteFrame>();
-                    foreach (var Frame in Anim.OrderBy(x => GetNumberSufix(x)))
-                    {
-                        SpriteFrame FrameInfo = LoadFrameInfo(Frame);
-
-                        SpriteFrames.Add(FrameInfo);
-                    }
-
-                    Info.Frames = SpriteFrames.ToArray();
-
-                    Sprites.Add(Info);
-                }
-            }
+                LoadAsGroup(Frames, Sprites);
             else
-            {
-                List<SpriteFrame> SpriteFrames = new List<SpriteFrame>();
-                foreach (var Frame in Frames.Cast<XmlNode>())
-                {
-                    SpriteInfo Info = new SpriteInfo();
-                    Info.Name = Frame.Attributes["name"].Value.Trim();
+                LoadAsFrames(Frames, Sprites);
 
+            this.Sprites = Sprites.ToArray();
+        }
+
+        private static void LoadAsFrames(XmlNodeList Frames, List<SpriteInfo> Sprites)
+        {
+            List<SpriteFrame> SpriteFrames = new List<SpriteFrame>();
+            foreach (var Frame in Frames.Cast<XmlNode>())
+            {
+                SpriteInfo Info = new SpriteInfo();
+                Info.Name = Frame.Attributes["name"].Value.Trim();
+
+                SpriteFrame FrameInfo = LoadFrameInfo(Frame);
+
+                SpriteFrames.Add(FrameInfo);
+
+                Info.Frames = SpriteFrames.ToArray();
+
+                Sprites.Add(Info);
+            }
+        }
+
+        private void LoadAsGroup(XmlNodeList Frames, List<SpriteInfo> Sprites)
+        {
+            foreach (var Anim in Frames.Cast<XmlNode>().GroupBy(GetGroupName))
+            {
+                var FirstFrame = Anim.First();
+
+                SpriteInfo Info = new SpriteInfo();
+                Info.Name = GetGroupName(FirstFrame);
+
+                List<SpriteFrame> SpriteFrames = new List<SpriteFrame>();
+                foreach (var Frame in Anim.OrderBy(x => GetNumberSufix(x)))
+                {
                     SpriteFrame FrameInfo = LoadFrameInfo(Frame);
 
                     SpriteFrames.Add(FrameInfo);
-
-                    Info.Frames = SpriteFrames.ToArray();
-
-                    Sprites.Add(Info);
                 }
-            }
 
-            this.Sprites = Sprites.ToArray();
+                Info.Frames = SpriteFrames.ToArray();
+
+                Sprites.Add(Info);
+            }
         }
 
         private static SpriteFrame LoadFrameInfo(XmlNode Frame)
