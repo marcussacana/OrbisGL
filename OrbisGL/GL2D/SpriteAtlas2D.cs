@@ -14,6 +14,7 @@ namespace OrbisGL.GL2D
     /// </summary>
     public class SpriteAtlas2D : GLObject2D
     {
+
         Sprite2D SpriteView = new Sprite2D(new Texture2D());
 
         private Vector2[] FrameOffsets;
@@ -31,19 +32,28 @@ namespace OrbisGL.GL2D
         /// <summary>
         /// Get or Set the loaded sprite sheet texture instance
         /// </summary>
-        public Texture SpriteSheet
+        public Texture Texture
         {
             get => ((Texture2D)SpriteView.Target).Texture;
             set
             {
                 ((Texture2D)SpriteView.Target).Texture = value;
-                ((Texture2D)SpriteView.Target).RefreshVertex();
+
+                if (value != null)
+                    ((Texture2D)SpriteView.Target).RefreshVertex();
             }
         }
+        public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
+        public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
+
+        private bool AllowTexDisposal = false;
+
+        public event EventHandler OnAnimationEnd;
 
         public SpriteAtlas2D()
         {
             AddChild(SpriteView);
+            SpriteView.OnAnimationEnd += (sender, e) => OnAnimationEnd?.Invoke(this, e);
         }
 
         /// <summary>
@@ -93,8 +103,8 @@ namespace OrbisGL.GL2D
             SpriteView.Frames = Frames.Select(x => x.Coordinates).ToArray();
             var FirstFrame = Frames.First();
 
-            SpriteView.Width = (int)FirstFrame.Coordinates.Width;
-            SpriteView.Height = (int)FirstFrame.Coordinates.Height;
+            Width = SpriteView.Width = (int)FirstFrame.Coordinates.Width;
+            Height = SpriteView.Height = (int)FirstFrame.Coordinates.Height;
 
             FrameOffsets = Frames.Select(x => new Vector2(x.X, x.Y)).ToArray();
 
@@ -262,6 +272,23 @@ namespace OrbisGL.GL2D
             return FrameInfo;
         }
 
+        /// <summary>
+        /// Clone this sprite sharing the same texture memory
+        /// </summary>
+        /// <param name="AllowDisposal">When false, the clone instance can't dispose the shared texture</param>
+        public SpriteAtlas2D Clone(bool AllowDisposal)
+        {
+            return new SpriteAtlas2D()
+            {
+                FrameOffsets = FrameOffsets,
+                Sprites = Sprites,
+                Texture = Texture,
+                AllowTexDisposal = AllowDisposal,
+                Width = Width,
+                Height = Height
+            };
+        }
+
         private bool IsNumberSufix(XmlNode x)
         {
             return GetNumberSufixString(x) != null;
@@ -311,6 +338,15 @@ namespace OrbisGL.GL2D
             var Sufix = GetNumberSufixString(x);
 
             return FrameName.Substring(0, FrameName.Length - Sufix.Length).Trim();
+        }
+
+        public override void Dispose()
+        {
+            if (!AllowTexDisposal)
+            {
+                Texture = null;
+            }
+            base.Dispose();
         }
     }
 }

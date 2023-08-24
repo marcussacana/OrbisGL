@@ -15,6 +15,11 @@ namespace OrbisGL.GL2D
     {
         public GLObject2D Target { get; private set; }
 
+        public override RGBColor Color { get => Target.Color; set => Target.Color = value; }
+        public override byte Opacity { get => Target.Opacity; set => Target.Opacity = value; }
+
+        public event EventHandler OnAnimationEnd;
+
         int _FrameDelay;
 
         /// <summary>
@@ -133,9 +138,11 @@ namespace OrbisGL.GL2D
         }
 
 
+
         /// <summary>
-        /// Set the next frame visible
+        /// Advances to the next available frame.
         /// </summary>
+        /// <returns>The index of the newly rendered frame, or -1 if no frames are available.</returns>
         public virtual int NextFrame()
         {
             if (Width == 0)
@@ -147,13 +154,25 @@ namespace OrbisGL.GL2D
             if (Frames == null || !Frames.Any())
                 throw new ArgumentException("Missing Frame Info");
 
-            if (Frames.Length != 0 && CurrentFrame >= Frames.Length)
+            if (Frames.Length == 0)
+                return -1;
+
+            if (CurrentFrame >= Frames.Length)
+            {
                 CurrentFrame = 0;
+                OnAnimationEnd?.Invoke(this, EventArgs.Empty);
+            }
 
             var DrawFrame = CurrentFrame;
 
             SetVisibleRectangle(Frames[CurrentFrame]);
             CurrentFrame++;
+
+            if (CurrentFrame >= Frames.Length)
+            {
+                CurrentFrame = 0;
+                OnAnimationEnd?.Invoke(this, EventArgs.Empty);
+            }
 
             return DrawFrame;
         }

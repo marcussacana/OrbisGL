@@ -564,7 +564,10 @@ void main(void) {
             SP.Load((i) =>
             {
                 if (SP.Loaded)
+                {
                     GLControl.GLApplication.AddObject(SP);
+                    SP.Begin();
+                }
             });
 #endif
         }
