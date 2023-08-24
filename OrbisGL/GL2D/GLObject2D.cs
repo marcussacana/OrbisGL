@@ -214,7 +214,7 @@ namespace OrbisGL.GL2D
                 base.Draw(Tick);
             }
 
-            foreach (var Child in Children)
+            foreach (var Child in Children.ToArray())
             {
                 Child.Draw(Tick);
             }
@@ -251,7 +251,10 @@ namespace OrbisGL.GL2D
 
         public override void Dispose()
         {
-            foreach (var Child in Children)
+            if (Parent != null)
+                Parent.RemoveChild(this);
+
+            foreach (var Child in Children.ToArray())
             {
                 Child.Dispose();
             }

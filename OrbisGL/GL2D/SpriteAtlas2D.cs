@@ -318,7 +318,12 @@ namespace OrbisGL.GL2D
 
         public void NextFrame()
         {
+            var AnimName = CurrentSprite;
             var FrameID = SpriteView.NextFrame();
+            
+            if (CurrentSprite != AnimName)
+                return;
+
             SpriteView.Position = -FrameOffsets[FrameID];
         }
 

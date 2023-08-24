@@ -16,6 +16,7 @@ using static OrbisGL.GL2D.Coordinates2D;
 using Button = OrbisGL.Controls.Button;
 using Panel = OrbisGL.Controls.Panel;
 using TextBox = OrbisGL.Controls.TextBox;
+using Orbis.Game;
 
 namespace GLTest
 {

@@ -157,10 +157,12 @@ namespace OrbisGL.GL2D
             if (Frames.Length == 0)
                 return -1;
 
+            bool AnimationEnd = false;
+
             if (CurrentFrame >= Frames.Length)
             {
                 CurrentFrame = 0;
-                OnAnimationEnd?.Invoke(this, EventArgs.Empty);
+                AnimationEnd = true;
             }
 
             var DrawFrame = CurrentFrame;
@@ -171,8 +173,11 @@ namespace OrbisGL.GL2D
             if (CurrentFrame >= Frames.Length)
             {
                 CurrentFrame = 0;
-                OnAnimationEnd?.Invoke(this, EventArgs.Empty);
+                AnimationEnd = true;
             }
+
+            if (AnimationEnd)
+                OnAnimationEnd?.Invoke(this, EventArgs.Empty);
 
             return DrawFrame;
         }
