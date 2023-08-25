@@ -42,6 +42,11 @@ namespace OrbisGL.GL
             }
         }
 
+        /// <summary>
+        /// A string that may contain, the Color name or RGB hex value like #RRGGBB,
+        /// #RRGGBBAA is accepted but the alpha is ignored.
+        /// </summary>
+        /// <param name="ColorCode"></param>
         public RGBColor(string ColorCode)
         {
             int R = 0, G = 0, B = 0;

@@ -8,6 +8,7 @@ namespace OrbisGL.GL2D
     public class Texture2D : GLObject2D
     {
         int TextureUniformLocation;
+        int MirrorUniformLocation;
 
         float _Rotate = 0f;
         public float Rotate
@@ -19,6 +20,7 @@ namespace OrbisGL.GL2D
                 RefreshVertex();
             }
         }
+        public bool Mirror { get; set; }
 
         /// <summary>
         /// Get or Set the texture instance, 
@@ -32,6 +34,7 @@ namespace OrbisGL.GL2D
             Program = new GLProgram(hProgram);
 
             TextureUniformLocation = GLES20.GetUniformLocation(hProgram, "Texture");
+            MirrorUniformLocation = GLES20.GetUniformLocation(hProgram, "Mirror");
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);
             Program.AddBufferAttribute("uv", AttributeType.Float, AttributeSize.Vector2);
@@ -92,6 +95,7 @@ namespace OrbisGL.GL2D
             if (Texture != null)
             {
                 Program.SetUniform(TextureUniformLocation, Texture.Active());
+                Program.SetUniform(MirrorUniformLocation, Mirror ? 1 : 0);
             }
             base.Draw(Tick);
         }
