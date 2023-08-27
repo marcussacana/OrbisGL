@@ -9,8 +9,11 @@ namespace OrbisGL.Audio
     public interface IAudioOut : IDisposable
     {
         void SetVolume(byte Value);
-        void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000);
+        void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false);
         void Play(RingBuffer PCMBuffer);
         void Stop();
+
+        void Suspend();
+        void Resume();
     }
 }

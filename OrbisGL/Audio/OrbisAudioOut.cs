@@ -16,6 +16,8 @@ namespace OrbisGL.Audio
         
         bool StopPlayer = false;
 
+        bool FloatSample = false;
+
         int Channels;
         uint Grain;
         uint Sampling;
@@ -24,7 +26,7 @@ namespace OrbisGL.Audio
 
         private static bool Initialized;
 
-        public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000)
+        public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false)
         {
             if (!(new uint[] { 256, 512, 768, 1024, 1280, 1536, 1792, 2048 }).Contains(Grain))
                 throw new ArgumentException("Grain must be one of the given values:\n256, 512, 768, 1024, 1280, 1536, 1792, 2048");
@@ -32,6 +34,7 @@ namespace OrbisGL.Audio
             this.Channels = Channels;
             this.Grain = Grain;
             this.Sampling = SamplingRate;
+            this.FloatSample = FloatSample;
         }
 
         public void Play(RingBuffer PCMBuffer)
@@ -62,7 +65,12 @@ namespace OrbisGL.Audio
 
         private unsafe void Player()
         {
-            var Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_STEREO);
+            uint Param;
+
+            if (FloatSample)
+                Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_STEREO);
+            else
+                Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_STEREO);
 
             handle = sceAudioOutOpen(
                 ORBIS_USER_SERVICE_USER_ID_SYSTEM, 
@@ -104,7 +112,7 @@ namespace OrbisGL.Audio
                             }
                         }
 
-                        if (Param == ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_8CH)
+                        if (FloatSample)
                         {
                             for (var i = 0; i < Grain * Channels; i++)
                             {
@@ -135,6 +143,8 @@ namespace OrbisGL.Audio
 
         public void SetVolume(byte Value)
         {
+            Value = Math.Min(Value, (byte)100);
+
             int[] Volume = new int[(int)OrbisAudioOutChannel.MAX];
 
             for (int i = 0; i < Volume.Length; i++)
@@ -143,6 +153,16 @@ namespace OrbisGL.Audio
             }
 
             sceAudioOutSetVolume(handle, ORBIS_AUDIO_VOLUME_FLAG_ALL, Volume);
+        }
+
+        public void Suspend()
+        {
+            SoundThread?.Suspend();
+        }
+
+        public void Resume()
+        {
+            SoundThread?.Resume();
         }
 
         public void Stop()

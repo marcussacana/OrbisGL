@@ -10,7 +10,8 @@ namespace OrbisGL.Audio
     public interface IAudioPlayer : IDisposable
     {
         bool Playing { get; }
-        TimeSpan? Duration { get; }
+
+        TimeSpan? CurrentTime { get; }
 
         /// <summary>
         /// Loads an audio file (does not start the player)

@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace OrbisGL.Audio
 {
@@ -29,7 +23,7 @@ namespace OrbisGL.Audio
 
         Thread PlayerThread = null;
 
-        public TimeSpan? Duration { get; private set; }
+        public TimeSpan? CurrentTime { get; private set; }
 
         public bool Playing => !Paused && Stream != null && !Stopped;
         private int BlockSize => Format.WBlockAlign * (int)Format.DSamplesPerSec;
@@ -161,6 +155,9 @@ namespace OrbisGL.Audio
 
         public void Resume()
         {
+            if (Driver == null)
+                throw new Exception("Audio Output Driver Not Set");
+            
             if (PlayerThread == null)
             {
                 PlayerThread = new Thread(Player);
@@ -183,7 +180,7 @@ namespace OrbisGL.Audio
                 Driver.SetProprieties(Format.WChannels, Grain, Format.DSamplesPerSec);
                 Driver.Play(Buffer);
 
-                Duration = TimeSpan.Zero;
+                CurrentTime = TimeSpan.Zero;
 
                 byte[] DataBuffer = new byte[BlockSize];
 
@@ -196,7 +193,7 @@ namespace OrbisGL.Audio
                         int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
                         Buffer.Write(DataBuffer, 0, Readed);
 
-                        Duration += TimeSpan.FromSeconds(1);
+                        CurrentTime += TimeSpan.FromSeconds(1);
 
                         while (Paused && !Stopped)
                             Thread.Sleep(100);
