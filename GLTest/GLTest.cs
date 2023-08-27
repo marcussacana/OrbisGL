@@ -110,7 +110,7 @@ void main(void) {
             Texture01.SetImage(File.ReadAllBytes("t3.png"), PixelFormat.RGBA, false);
             Texture11.SetImage(File.ReadAllBytes("t4.png"), PixelFormat.RGBA, false);
 
-            tiledTexture.SetTexture(Texture00, Texture10, Texture01, Texture11);
+            tiledTexture.SetTexture(Texture00, null, null, null);
 
 
             //tiledTexture.Texture = Texture00;
@@ -143,6 +143,66 @@ void main(void) {
             var Images = Directory.GetFiles(FS.SelectedPath, "*.png", SearchOption.AllDirectories)
                 .Concat(Directory.GetFiles(FS.SelectedPath, ".bmp", SearchOption.AllDirectories))
                 .Concat(Directory.GetFiles(FS.SelectedPath, ".jpg", SearchOption.AllDirectories)).ToArray();
+
+            for (int i = 0; i < Images.Length; i++)
+            {
+                var ImgFile = Images[i];
+                using (var ImgOri = new Bitmap(ImgFile))
+                {
+                    if (ImgOri.Width * ImgOri.Height <= Constants.ORBIS_MAX_TEXTURE_SIZE * Constants.ORBIS_MAX_TEXTURE_SIZE)
+                        continue;
+
+                    using (var Img = Trim(ImgOri))
+                    {
+                        int TileWidth = Img.Width / 2;
+                        int TileHeight = Img.Height / 2;
+
+                        TileWidth += 4 - (TileWidth % 4);
+                        TileHeight += 4 - (TileHeight % 4);
+
+                        if (TileWidth * TileHeight > Constants.ORBIS_MAX_TEXTURE_SIZE * Constants.ORBIS_MAX_TEXTURE_SIZE)
+                            throw new Exception("Dear god, a fucking giant texture");
+
+
+                        var OutFile = Path.Combine(Path.GetDirectoryName(ImgFile), Path.GetFileNameWithoutExtension(ImgFile) + "_t{0}" + Path.GetExtension(ImgFile));
+
+                        using (Bitmap UL = new Bitmap(TileWidth, TileHeight))
+                        using (Bitmap UR = new Bitmap(Img.Width - TileWidth, TileHeight))
+                        using (Bitmap BL = new Bitmap(TileWidth, Img.Height - TileHeight))
+                        using (Bitmap BR = new Bitmap(Img.Width - TileWidth, Img.Height - TileHeight))
+                        {
+                            using (Graphics g = Graphics.FromImage(UL))
+                            {
+                                g.DrawImage(Img, new System.Drawing.Rectangle(0, 0, UL.Width, UL.Height), 0, 0, UL.Width, UL.Height, GraphicsUnit.Pixel);
+                                g.Flush();
+                            }
+
+                            using (Graphics g = Graphics.FromImage(UR))
+                            {
+                                g.DrawImage(Img, new System.Drawing.Rectangle(0, 0, UR.Width, UR.Height), TileWidth, 0, UR.Width, UR.Height, GraphicsUnit.Pixel);
+                                g.Flush();
+                            }
+
+                            using (Graphics g = Graphics.FromImage(BL))
+                            {
+                                g.DrawImage(Img, new System.Drawing.Rectangle(0, 0, BL.Width, BL.Height), 0, TileHeight, BL.Width, BL.Height, GraphicsUnit.Pixel);
+                                g.Flush();
+                            }
+
+                            using (Graphics g = Graphics.FromImage(BR))
+                            {
+                                g.DrawImage(Img, new System.Drawing.Rectangle(0, 0, BR.Width, BR.Height), TileWidth, TileHeight, BR.Width, BR.Height, GraphicsUnit.Pixel);
+                                g.Flush();
+                            }
+
+                            UL.Save(string.Format(OutFile, "UL"));
+                            UR.Save(string.Format(OutFile, "UR"));
+                            BL.Save(string.Format(OutFile, "BL"));
+                            BR.Save(string.Format(OutFile, "BR"));
+                        }
+                    }
+                }
+            }
 
             for (int i = 0; i < Images.Length; i++)
             {
@@ -217,6 +277,87 @@ void main(void) {
                     Text = "Generating Textures " + i + "/" + Images.Length;
                     System.Windows.Forms.Application.DoEvents();
                 }
+            }
+        }
+        public Bitmap Trim(Bitmap bmp)
+        {
+            int w = bmp.Width;
+            int h = bmp.Height;
+
+            Func<int, bool> EmptyRow = row =>
+            {
+                for (int i = 0; i < w; ++i)
+                    if (bmp.GetPixel(i, row).A != 0)
+                        return false;
+                return true;
+            };
+
+            Func<int, bool> EmptyColumn = col =>
+            {
+                for (int i = 0; i < h; ++i)
+                    if (bmp.GetPixel(col, i).A != 0)
+                        return false;
+                return true;
+            };
+
+
+            int bottommost = 0;
+            for (int row = h - 1; row >= 0; --row)
+            {
+                if (EmptyRow(row))
+                    bottommost = row;
+                else break;
+            }
+            int rightmost = 0;
+
+            for (int col = w - 1; col >= 0; --col)
+            {
+                if (EmptyColumn(col))
+                    rightmost = col;
+                else
+                    break;
+            }
+
+            if (rightmost == 0) rightmost = w; // As reached left
+            if (bottommost == 0) bottommost = h; // As reached top.
+
+
+
+            int topmost = 0;
+            int leftmost = 0;
+
+            int croppedWidth = rightmost - leftmost;
+            int croppedHeight = bottommost - topmost;
+
+            if (croppedWidth == 0) // No border on left or right
+            {
+                leftmost = 0;
+                croppedWidth = w;
+            }
+
+            if (croppedHeight == 0) // No border on top or bottom
+            {
+                topmost = 0;
+                croppedHeight = h;
+            }
+
+            try
+            {
+                var target = new Bitmap(croppedWidth, croppedHeight);
+                using (Graphics g = Graphics.FromImage(target))
+                {
+                    g.DrawImage(bmp,
+                      new RectangleF(0, 0, croppedWidth, croppedHeight),
+                      new RectangleF(leftmost, topmost, croppedWidth, croppedHeight),
+                      GraphicsUnit.Pixel);
+                }
+                return target;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                  string.Format("Values are topmost={0} btm={1} left={2} right={3} croppedWidth={4} croppedHeight={5}", topmost, bottommost, leftmost, rightmost, croppedWidth, croppedHeight),
+                  ex);
             }
         }
 

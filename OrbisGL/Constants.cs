@@ -14,7 +14,7 @@
         /// <summary>
         /// Tested on PS4 Slim, Must be checked in PS4 PRO
         /// </summary>
-        public const ushort ORBIS_MAX_TEXTURE_RESOLUTION = 4096;
+        public const ushort ORBIS_MAX_TEXTURE_SIZE = 4096;
 
         public const uint ORBIS_MOUSE_BUTTON_PRIMARY = 0x00000001;
         public const uint ORBIS_MOUSE_BUTTON_SECONDARY = 0x00000002;

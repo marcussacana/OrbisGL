@@ -58,8 +58,8 @@ namespace OrbisGL.GL
         /// <param name="Format">Pixel Data Format</param>
         public unsafe void SetData(int Width, int Height, byte[] Data, PixelFormat Format, bool EnableFiltering)
         {
-            if (Width * Height > Constants.ORBIS_MAX_TEXTURE_RESOLUTION * Constants.ORBIS_MAX_TEXTURE_RESOLUTION)
-                throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_RESOLUTION}x{Constants.ORBIS_MAX_TEXTURE_RESOLUTION}");
+            if (Width * Height > Constants.ORBIS_MAX_TEXTURE_SIZE * Constants.ORBIS_MAX_TEXTURE_SIZE)
+                throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_SIZE}x{Constants.ORBIS_MAX_TEXTURE_SIZE}");
             
             Bind(Active());
 
@@ -85,8 +85,8 @@ namespace OrbisGL.GL
         }
         public unsafe void SetDataCompressed(int Width, int Height, byte[] Data, TextureCompressionFormats Format, bool EnableFiltering)
         {
-            if (Width * Height > Constants.ORBIS_MAX_TEXTURE_RESOLUTION * Constants.ORBIS_MAX_TEXTURE_RESOLUTION)
-                throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_RESOLUTION}x{Constants.ORBIS_MAX_TEXTURE_RESOLUTION}");
+            if (Width * Height > Constants.ORBIS_MAX_TEXTURE_SIZE * Constants.ORBIS_MAX_TEXTURE_SIZE)
+                throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_SIZE}x{Constants.ORBIS_MAX_TEXTURE_SIZE}");
 
             Bind(Active());
             

@@ -129,6 +129,7 @@
     <Compile Include="GL2D\RichText2D.cs" />
     <Compile Include="GL2D\RoundedRectangle2D.cs" />
     <Compile Include="GL2D\Sprite2D.cs" />
+    <Compile Include="GL2D\TiledSpriteAtlas2D.cs" />
     <Compile Include="GL2D\SpriteAtlas2D.cs" />
     <Compile Include="GL2D\Text2D.cs" />
     <Compile Include="GL2D\Texture2D.cs" />

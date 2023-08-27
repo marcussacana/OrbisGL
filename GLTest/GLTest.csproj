@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <ProjectGuid>{836BC80E-8DFE-49A8-A411-B30FF5A8482F}</ProjectGuid>
     <OutputPath>bin\Debug\</OutputPath>
     <OutputType>WinExe</OutputType>
@@ -14,7 +14,7 @@
     <Deterministic>true</Deterministic>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug_Win' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_Win|x64' ">
     <OutputPath>bin\x64\Debug_Win\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
     <DefineConstants>DEBUG</DefineConstants>
@@ -70,57 +70,61 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="GLControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="GLTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GLTest.Designer.cs">
-      <DependentUpon>GLTest.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Entry.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="GLTest.resx">
-      <DependentUpon>GLTest.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="cat_sprite.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\FridayNightFunkin\main\main\main.csproj">
-      <Project>{7071404e-a6d9-4345-9616-d74ae2f38148}</Project>
-      <Name>main</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\FridayNightFunkin\main\OrbisGL\OrbisGL\OrbisGL.csproj">
-      <Project>{7ef00bd1-a3c4-45fb-bf5c-44db18f28ec9}</Project>
-      <Name>OrbisGL</Name>
-    </ProjectReference>
-  </ItemGroup>
+	<Choose>
+		<When Condition="'$(Configuration)'=='Debug_Win'">
+		  <ItemGroup>
+			<Compile Include="GLControl.cs">
+			  <SubType>Component</SubType>
+			</Compile>
+			<Compile Include="GLTest.cs">
+			  <SubType>Form</SubType>
+			</Compile>
+			<Compile Include="GLTest.Designer.cs">
+			  <DependentUpon>GLTest.cs</DependentUpon>
+			</Compile>
+			<Compile Include="Entry.cs" />
+			<Compile Include="Properties\AssemblyInfo.cs" />
+			<EmbeddedResource Include="GLTest.resx">
+			  <DependentUpon>GLTest.cs</DependentUpon>
+			</EmbeddedResource>
+			<EmbeddedResource Include="Properties\Resources.resx">
+			  <Generator>ResXFileCodeGenerator</Generator>
+			  <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+			  <SubType>Designer</SubType>
+			</EmbeddedResource>
+			<Compile Include="Properties\Resources.Designer.cs">
+			  <AutoGen>True</AutoGen>
+			  <DependentUpon>Resources.resx</DependentUpon>
+			  <DesignTime>True</DesignTime>
+			</Compile>
+			<None Include="packages.config" />
+			<None Include="Properties\Settings.settings">
+			  <Generator>SettingsSingleFileGenerator</Generator>
+			  <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+			</None>
+			<Compile Include="Properties\Settings.Designer.cs">
+			  <AutoGen>True</AutoGen>
+			  <DependentUpon>Settings.settings</DependentUpon>
+			  <DesignTimeSharedInput>True</DesignTimeSharedInput>
+			</Compile>
+		  </ItemGroup>
+		  <ItemGroup>
+			<None Include="App.config" />
+		  </ItemGroup>
+		  <ItemGroup>
+			<EmbeddedResource Include="cat_sprite.png" />
+		  </ItemGroup>
+		  <ItemGroup>
+			<ProjectReference Include="..\..\..\..\FridayNightFunkin\main\main\main.csproj">
+			  <Project>{7071404e-a6d9-4345-9616-d74ae2f38148}</Project>
+			  <Name>main</Name>
+			</ProjectReference>
+			<ProjectReference Include="..\..\..\..\FridayNightFunkin\main\OrbisGL\OrbisGL\OrbisGL.csproj">
+			  <Project>{7ef00bd1-a3c4-45fb-bf5c-44db18f28ec9}</Project>
+			  <Name>OrbisGL</Name>
+			</ProjectReference>
+		  </ItemGroup>
+		</When>
+	</Choose>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

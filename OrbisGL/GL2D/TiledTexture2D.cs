@@ -54,11 +54,19 @@ namespace OrbisGL.GL2D
             TextureTile10 = X1Y0;
             TextureTile11 = X1Y1;
 
+            if (X0Y0 == null)
+                return;
+
             Width = X0Y0.Width + (X0Y0?.Width ?? 0);
             Height = X0Y0.Height + (X0Y1?.Height ?? 0);
             
             RefreshVertex();
         }
+
+        public Texture[] GetTextures()
+        {
+            return new Texture[] { TextureTile00, TextureTile10, TextureTile01, TextureTile11 };
+        } 
 
         public TiledTexture2D()
         {
@@ -116,6 +124,9 @@ namespace OrbisGL.GL2D
             // 0 1 4
             // 2 3 5
             // 6 7 8
+
+            if (TextureTile00 == null)
+                return;
 
             var MaxSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
 
@@ -228,7 +239,7 @@ namespace OrbisGL.GL2D
                 AddIndex(2, 6, 3, 6, 7, 3);
 
             if (TextureTile11 != null)
-               AddIndex(3, 7, 5,  7, 5, 8);
+                AddIndex(3, 7, 5, 7, 5, 8);
 
             base.RefreshVertex();
         }
