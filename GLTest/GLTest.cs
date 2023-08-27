@@ -97,8 +97,28 @@ void main(void) {
 
         private void button1_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
-       }
+#if !ORBIS
+            TiledTexture2D tiledTexture = new TiledTexture2D();
+
+            Texture Texture00 = new Texture(true);
+            Texture Texture01 = new Texture(true);
+            Texture Texture10 = new Texture(true);
+            Texture Texture11 = new Texture(true);
+
+            Texture00.SetImage(File.ReadAllBytes("t1.png"), PixelFormat.RGBA, false);
+            Texture10.SetImage(File.ReadAllBytes("t2.png"), PixelFormat.RGBA, false);
+            Texture01.SetImage(File.ReadAllBytes("t3.png"), PixelFormat.RGBA, false);
+            Texture11.SetImage(File.ReadAllBytes("t4.png"), PixelFormat.RGBA, false);
+
+            tiledTexture.SetTexture(Texture00, Texture10, Texture01, Texture11);
+
+
+            //tiledTexture.Texture = Texture00;
+            //tiledTexture.RefreshVertex();
+
+            GLControl.GLApplication.AddObject(tiledTexture);
+#endif
+        }
 
         private void button2_Click(object sender, EventArgs e)
         {

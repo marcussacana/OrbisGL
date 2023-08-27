@@ -143,7 +143,6 @@ namespace OrbisGL.GL
                 default:
                     throw new Exception("Unexpected Pixel Format");
             }
-
             SetData(Width, Height, Buffer, TextureFormat, EnableFiltering);
         }
 

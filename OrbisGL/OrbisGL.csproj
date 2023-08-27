@@ -132,6 +132,7 @@
     <Compile Include="GL2D\SpriteAtlas2D.cs" />
     <Compile Include="GL2D\Text2D.cs" />
     <Compile Include="GL2D\Texture2D.cs" />
+    <Compile Include="GL2D\TiledTexture2D.cs" />
     <Compile Include="GL2D\Triangle2D.cs" />
     <Compile Include="GL\BufferAttribute.cs" />
     <Compile Include="GL\IRenderable.cs" />
@@ -186,6 +187,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Shaders\FragmentColor.glsl" />
+    <EmbeddedResource Include="Shaders\FragmentTextureTiled.glsl" />
     <EmbeddedResource Include="Shaders\VertexOffsetTexture.glsl" />
     <EmbeddedResource Include="Shaders\VertexOffset.glsl" />
     <EmbeddedResource Include="Shaders\Vertex.glsl" />
@@ -200,6 +202,7 @@
     <EmbeddedResource Include="Shaders\FragmentColorRoundedTriangle.glsl" />
     <EmbeddedResource Include="Shaders\Shaders.bin" />
     <EmbeddedResource Include="Shaders\FragmentTexture.glsl" />
+    <EmbeddedResource Include="Shaders\VertexOffsetTextureTiled.glsl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
