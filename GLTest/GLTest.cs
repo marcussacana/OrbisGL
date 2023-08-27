@@ -110,7 +110,7 @@ void main(void) {
             Texture01.SetImage(File.ReadAllBytes("t3.png"), PixelFormat.RGBA, false);
             Texture11.SetImage(File.ReadAllBytes("t4.png"), PixelFormat.RGBA, false);
 
-            tiledTexture.SetTexture(Texture00, null, null, null);
+            tiledTexture.SetTexture(Texture00, null, Texture01, null);
 
 
             //tiledTexture.Texture = Texture00;

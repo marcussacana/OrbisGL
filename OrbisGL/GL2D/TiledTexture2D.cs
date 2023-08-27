@@ -16,6 +16,7 @@ namespace OrbisGL.GL2D
         int Texture01UniformLocation;
         int Texture11UniformLocation;
         int MirrorUniformLocation;
+        int TileSizeUniformLocation;
 
         float _Rotate = 0f;
         public float Rotate
@@ -27,6 +28,8 @@ namespace OrbisGL.GL2D
                 RefreshVertex();
             }
         }
+
+        Vector2 TileSize = new Vector2(1, 1);
         
         public bool Mirror { get; set; }
 
@@ -57,7 +60,7 @@ namespace OrbisGL.GL2D
             if (X0Y0 == null)
                 return;
 
-            Width = X0Y0.Width + (X0Y0?.Width ?? 0);
+            Width = X0Y0.Width + (X1Y0?.Width ?? 0);
             Height = X0Y0.Height + (X0Y1?.Height ?? 0);
             
             RefreshVertex();
@@ -77,6 +80,7 @@ namespace OrbisGL.GL2D
             Texture01UniformLocation = GLES20.GetUniformLocation(hProgram, "Texture01");
             Texture10UniformLocation = GLES20.GetUniformLocation(hProgram, "Texture10");
             Texture11UniformLocation = GLES20.GetUniformLocation(hProgram, "Texture11");
+            TileSizeUniformLocation = GLES20.GetUniformLocation(hProgram, "TileSize");
 
             MirrorUniformLocation = GLES20.GetUniformLocation(hProgram, "Mirror");
 
@@ -92,6 +96,33 @@ namespace OrbisGL.GL2D
 
         public override void RefreshVertex()
         {
+
+            //TODO: Clone 6,8,4 points but with Half Local UV
+
+            if (TextureTile00 == null)
+                return;
+
+            var MaxSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
+
+            bool DoubleWidth = TextureTile10 != null;
+            bool DoubleHeight = TextureTile01 != null;
+
+            if (DoubleWidth && DoubleHeight)
+                Create2x2(MaxSize);
+            else if (DoubleWidth)
+                Create2x1(MaxSize);
+            else if (DoubleHeight)
+                Create1x2(MaxSize);
+            else
+                Create1x1(MaxSize);
+
+            base.RefreshVertex();
+        }
+
+        private void Create2x2(Vector2 MaxSize)
+        {
+            TileSize = new Vector2(2, 2);
+
             //   0 ---------- 1 ---------- 4
             //   |            |            |
             //   |            |            |
@@ -125,14 +156,6 @@ namespace OrbisGL.GL2D
             // 2 3 5
             // 6 7 8
 
-            if (TextureTile00 == null)
-                return;
-
-            var MaxSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
-
-            bool DoubleWidth = TextureTile10 != null;
-            bool DoubleHeight = TextureTile01 != null;
-
             var Point0 = new Vector2(0, 0);
             var Point1 = new Vector2(TextureTile00.Width, 0);
             var Point2 = new Vector2(0, TextureTile00.Height);
@@ -155,11 +178,125 @@ namespace OrbisGL.GL2D
             Point6 = RotatePoint(Point6, Center, Rotate);
             Point7 = RotatePoint(Point7, Center, Rotate);
 
-            float HalfWidth = DoubleWidth ? 0.5f : 0.5f / 2;
-            float HalfHeight = DoubleHeight ? 0.5f : 0.5f / 2;
+            ClearBuffers();
 
-            float FullWidth = HalfWidth * 2;
-            float FullHeight = HalfHeight * 2;
+            AddArray(Point0.ToPoint(MaxSize), -1);//0
+            AddArray(0, 0);//UV
+            AddArray(0, 0);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(1, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point1.ToPoint(MaxSize), -1);//1
+            AddArray(0.5f, 0);//UV
+            AddArray(1, 0);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(0, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point2.ToPoint(MaxSize), -1);//2
+            AddArray(0, 0.5f);
+            AddArray(0, 1);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(0, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point3.ToPoint(MaxSize), -1);//3
+            AddArray(0.5f, 0.5f);
+            AddArray(1, 1);//UV00
+            AddArray(1, 0);//UV01
+            AddArray(0, 1);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point4.ToPoint(MaxSize), -1);
+            AddArray(1, 0);//UV
+            AddArray(1, 0);//UV00
+            AddArray(1, 0);//UV01
+            AddArray(1, 0);//UV10
+            AddArray(1, 0);//UV11
+
+
+            AddArray(Point5.ToPoint(MaxSize), -1);
+            AddArray(1, 0.5f);//UV
+            AddArray(1, 1);//UV00
+            AddArray(1, 1);//UV01
+            AddArray(1, 1);//UV10
+            AddArray(1, 0);//UV11
+
+
+            AddArray(Point6.ToPoint(MaxSize), -1);
+            AddArray(0, 1);//UV
+            AddArray(0, 1);//UV00
+            AddArray(0, 1);//UV01
+            AddArray(0, 1);//UV10
+            AddArray(0, 1);//UV11
+
+
+            AddArray(Point7.ToPoint(MaxSize), -1);
+            AddArray(0.5f, 1);//UV
+            AddArray(1, 1);//UV00
+            AddArray(1, 1);//UV01
+            AddArray(0, 1);//UV10
+            AddArray(0, 1);//UV11
+
+            AddArray(Point8.ToPoint(MaxSize), -1);
+            AddArray(1, 1);//UV
+            AddArray(1, 1);//UV00
+            AddArray(1, 1);//UV01
+            AddArray(1, 1);//UV10
+            AddArray(1, 1);//UV11
+
+            AddIndex(0, 1, 2, 1, 2, 3);
+
+            AddIndex(1, 3, 4, 3, 4, 5);
+
+            AddIndex(2, 6, 3, 6, 7, 3);
+
+            AddIndex(3, 7, 5, 7, 5, 8);
+        }
+
+        private void Create2x1(Vector2 MaxSize)
+        {
+            TileSize = new Vector2(2, 1);
+
+            //   0 ---------- 1 ---------- 4
+            //   |            |            |
+            //   |            |            |
+            //   |            |            |
+            //   2 ---------- 3 ---------- 5
+
+            //Global UVs
+            // 0,0         0.5,0          1,0
+            // 0,1         0.5,1          1,1
+
+
+            //Local UVs
+            // 0,0      1,0 | 0,0         1,0
+            // 0,1      1,1 | 0,1         1,1
+
+            //UVs
+            // 00 | 10
+
+            //Points
+            // 0 1 4
+            // 2 3 5
+
+            var Point0 = new Vector2(0, 0);
+            var Point1 = new Vector2(TextureTile00.Width, 0);
+            var Point2 = new Vector2(0, TextureTile00.Height);
+            var Point3 = new Vector2(TextureTile00.Width, TextureTile00.Height);
+
+            var Point4 = new Vector2(Width, 0);
+            var Point5 = new Vector2(Width, TextureTile00.Height);
+
+            var Center = Point5 / 2f;
+
+            Point0 = RotatePoint(Point0, Center, Rotate);
+            Point1 = RotatePoint(Point1, Center, Rotate);
+            Point2 = RotatePoint(Point2, Center, Rotate);
+            Point3 = RotatePoint(Point3, Center, Rotate);
+            Point4 = RotatePoint(Point4, Center, Rotate);
+            Point5 = RotatePoint(Point5, Center, Rotate);
 
             ClearBuffers();
 
@@ -171,28 +308,28 @@ namespace OrbisGL.GL2D
             AddArray(0, 0);//UV11
 
             AddArray(Point1.ToPoint(MaxSize), -1);//1
-            AddArray(HalfWidth, 0);//UV
+            AddArray(0.5f, 0);//UV
             AddArray(1, 0);//UV00
             AddArray(0, 0);//UV01
             AddArray(0, 0);//UV10
             AddArray(0, 0);//UV11
 
             AddArray(Point2.ToPoint(MaxSize), -1);//2
-            AddArray(0, HalfHeight);
+            AddArray(0, 1);//UV
             AddArray(0, 1);//UV00
             AddArray(0, 0);//UV01
-            AddArray(0, 0);//UV10
+            AddArray(0, 1);//UV10
             AddArray(0, 0);//UV11
 
             AddArray(Point3.ToPoint(MaxSize), -1);//3
-            AddArray(HalfWidth, HalfHeight);
+            AddArray(0.5f, 1);//UV
             AddArray(1, 1);//UV00
             AddArray(1, 0);//UV01
             AddArray(0, 1);//UV10
             AddArray(0, 0);//UV11
 
             AddArray(Point4.ToPoint(MaxSize), -1);
-            AddArray(FullWidth, 0);//UV
+            AddArray(1, 0);//UV
             AddArray(1, 0);//UV00
             AddArray(1, 0);//UV01
             AddArray(1, 0);//UV10
@@ -200,49 +337,193 @@ namespace OrbisGL.GL2D
 
 
             AddArray(Point5.ToPoint(MaxSize), -1);
-            AddArray(FullWidth, HalfHeight);//UV
+            AddArray(1, 1);//UV
             AddArray(1, 1);//UV00
             AddArray(1, 1);//UV01
             AddArray(1, 1);//UV10
             AddArray(1, 0);//UV11
 
+            AddIndex(0, 1, 2, 1, 2, 3);
 
-            AddArray(Point6.ToPoint(MaxSize), -1);
-            AddArray(0, FullHeight);//UV
+            AddIndex(1, 3, 4, 3, 4, 5);
+        }
+
+        private void Create1x2(Vector2 MaxSize)
+        {
+            TileSize = new Vector2(1, 2);
+
+            //   0 ---------- 1
+            //   |            |
+            //   |            |
+            //   |            |
+            //   2 ---------- 3
+            //   |            |
+            //   |            |
+            //   |            |
+            //   6 ---------- 7 
+
+            //Global UVs
+            // 0,0         1,0
+            // 0,0.5f      1,0.5
+            // 0,1         1,1
+
+
+            //Local UVs
+            // 0,0      1,0 |
+            // 0,1      1,1 |
+            // -------------|
+            // 0,0      1,0 |
+            // 0,1      1,1 |
+
+            //UVs
+            // 00 |
+            // 01 |
+
+            //Points
+            // 0 1
+            // 2 3
+            // 4 5
+
+            var Point0 = new Vector2(0, 0);
+            var Point1 = new Vector2(TextureTile00.Width, 0);
+            var Point2 = new Vector2(0, TextureTile00.Height);
+            var Point3 = new Vector2(TextureTile00.Width, TextureTile00.Height);
+
+            var Point6 = new Vector2(0, Height);
+            var Point7 = new Vector2(TextureTile00.Width, Height);
+
+            var Center = Point7 / 2f;
+
+            Point0 = RotatePoint(Point0, Center, Rotate);
+            Point1 = RotatePoint(Point1, Center, Rotate);
+            Point2 = RotatePoint(Point2, Center, Rotate);
+            Point3 = RotatePoint(Point3, Center, Rotate);
+            Point6 = RotatePoint(Point6, Center, Rotate);
+            Point7 = RotatePoint(Point7, Center, Rotate);
+
+            ClearBuffers();
+
+            AddArray(Point0.ToPoint(MaxSize), -1);//0
+            AddArray(0, 0);//UV
+            AddArray(0, 0);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(1, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point1.ToPoint(MaxSize), -1);//1
+            AddArray(1, 0);//UV
+            AddArray(1, 0);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(0, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point2.ToPoint(MaxSize), -1);//2
+            AddArray(0, 0.5f);//UV
+            AddArray(0, 1);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(0, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point3.ToPoint(MaxSize), -1);//3
+            AddArray(1, 0.5f);//UV
+            AddArray(1, 1);//UV00
+            AddArray(1, 0);//UV01
+            AddArray(0, 1);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point6.ToPoint(MaxSize), -1);//4
+            AddArray(0, 1);//UV
             AddArray(0, 1);//UV00
             AddArray(0, 1);//UV01
             AddArray(0, 1);//UV10
             AddArray(0, 1);//UV11
 
 
-            AddArray(Point7.ToPoint(MaxSize), -1);
-            AddArray(HalfWidth, FullHeight);//UV
+            AddArray(Point7.ToPoint(MaxSize), -1);//5
+            AddArray(1, 1);//UV
             AddArray(1, 1);//UV00
             AddArray(1, 1);//UV01
             AddArray(0, 1);//UV10
             AddArray(0, 1);//UV11
 
-            AddArray(Point8.ToPoint(MaxSize), -1);
-            AddArray(FullWidth, FullHeight);//UV
-            AddArray(1, 1);//UV00
-            AddArray(1, 1);//UV01
-            AddArray(1, 1);//UV10
-            AddArray(1, 1);//UV11
+            AddIndex(0, 1, 2, 1, 2, 3);
 
-            if (TextureTile00 != null)
-                AddIndex(0, 1, 2, 1, 2, 3);
-
-            if (TextureTile10 != null)
-                AddIndex(1, 3, 4, 3, 4, 5);
-
-            if (TextureTile01 != null)
-                AddIndex(2, 6, 3, 6, 7, 3);
-
-            if (TextureTile11 != null)
-                AddIndex(3, 7, 5, 7, 5, 8);
-
-            base.RefreshVertex();
+            AddIndex(2, 3, 4, 4, 5, 3);
         }
+
+        private void Create1x1(Vector2 MaxSize)
+        {
+            TileSize = new Vector2(1, 1);
+
+            //   0 ---------- 1 
+            //   |            |
+            //   |            | 
+            //   |            |
+            //   2 ---------- 3
+
+
+            //Global UVs
+            // 0,0         1,0
+            // 0,1         1,1
+
+
+            //Local UVs
+            // 0,0      1,0 |
+            // 0,1      1,1 |
+            //---------------
+
+            //UVs
+            // 00
+
+            //Points
+            // 0 1
+            // 2 3
+
+            var Point0 = new Vector2(0, 0);
+            var Point1 = new Vector2(TextureTile00.Width, 0);
+            var Point2 = new Vector2(0, TextureTile00.Height);
+            var Point3 = new Vector2(TextureTile00.Width, TextureTile00.Height);
+
+            var Center = Point3 / 2f;
+
+            Point0 = RotatePoint(Point0, Center, Rotate);
+            Point1 = RotatePoint(Point1, Center, Rotate);
+            Point2 = RotatePoint(Point2, Center, Rotate);
+            Point3 = RotatePoint(Point3, Center, Rotate);
+
+            ClearBuffers();
+
+            AddArray(Point0.ToPoint(MaxSize), -1);//0
+            AddArray(0, 0);//UV
+            AddArray(0, 0);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(1, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point1.ToPoint(MaxSize), -1);//1
+            AddArray(1, 0);//UV
+            AddArray(1, 0);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(0, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point2.ToPoint(MaxSize), -1);//2
+            AddArray(0, 1);
+            AddArray(0, 1);//UV00
+            AddArray(0, 0);//UV01
+            AddArray(0, 0);//UV10
+            AddArray(0, 0);//UV11
+
+            AddArray(Point3.ToPoint(MaxSize), -1);//3
+            AddArray(1, 1);
+            AddArray(1, 1);//UV00
+            AddArray(1, 0);//UV01
+            AddArray(0, 1);//UV10
+            AddArray(0, 0);//UV11
+
+            AddIndex(0, 1, 2, 1, 2, 3);
+        }
+
         public override void Draw(long Tick)
         {
             Program.SetUniform(MirrorUniformLocation, Mirror ? 1 : 0);
@@ -255,6 +536,8 @@ namespace OrbisGL.GL2D
                 Program.SetUniform(Texture10UniformLocation, TextureTile10.Active());
             if (TextureTile11 != null)
                 Program.SetUniform(Texture11UniformLocation, TextureTile11.Active());
+
+            Program.SetUniform(TileSizeUniformLocation, TileSize);
 
             base.Draw(Tick);
         }

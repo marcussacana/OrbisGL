@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Security.Policy;
 using System.Xml;
 
 namespace OrbisGL.GL2D
@@ -143,31 +142,23 @@ namespace OrbisGL.GL2D
 
                 SpriteTexUL.SetDDS(UL, true);
 
-                //TODO: FIX WHEN THERE ARE NO TILES
-
                 if (UR != null)
                 {
                     SpriteTexUR = new Texture(true);
                     SpriteTexUR.SetDDS(UR, true);
                 }
-                else
-                    SpriteTexUR = SpriteTexUL;
 
                 if (BL != null)
                 {
                     SpriteTexBL = new Texture(true);
                     SpriteTexBL.SetDDS(BL, true);
                 }
-                else
-                    SpriteTexBL = SpriteTexUL;
 
                 if (BR != null)
                 {
                     SpriteTexBR = new Texture(true);
                     SpriteTexBR.SetDDS(BR, true);
                 }
-                else
-                    SpriteTexBR = SpriteTexUL;
 
                 LoadSprite(Document, new Texture[] { SpriteTexUL, SpriteTexUR, SpriteTexBL, SpriteTexBR });
 
