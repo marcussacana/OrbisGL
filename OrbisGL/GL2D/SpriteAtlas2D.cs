@@ -73,9 +73,9 @@ namespace OrbisGL.GL2D
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
         /// <param name="EnableFiltering">Enables texture Linear filtering</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
-        public SpriteAtlas2D(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering) : this()
+        public SpriteAtlas2D(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering, bool EnableCompression) : this()
         {
-            LoadSprite(Document, LoadFile, EnableFiltering);
+            LoadSprite(Document, LoadFile, EnableFiltering, EnableCompression);
         }
 
         /// <summary>
@@ -118,12 +118,22 @@ namespace OrbisGL.GL2D
         /// <param name="Document">An Adobe Animate texture atlas info</param>
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
         /// <param name="EnableFiltering">Enables texture Linear filtering</param>
+        /// <param name="EnableCompression">Enables texture compression</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
-        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering)
+        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering, bool EnableCompression)
         {
             var TexturePath = Document.DocumentElement.GetAttribute("imagePath");
 
-            var Stream = LoadFile.Invoke(TexturePath);
+            var TextureDDSPath = Path.ChangeExtension(TexturePath, "dds");
+
+            bool ForceDDS = true;
+            var Stream = LoadFile.Invoke(TextureDDSPath);
+
+            if (Stream == null)
+            {
+                ForceDDS = false;
+                Stream = LoadFile.Invoke(TexturePath);
+            }
 
             if (Stream == null)
             {
@@ -136,23 +146,32 @@ namespace OrbisGL.GL2D
 
             try
             {
-                if (Stream is MemoryStream mStream)
+                if (ForceDDS)
                 {
-                    Buffer = mStream;
+                    Stream.Position = 0;
+                    SpriteTex.SetDDS(Stream, EnableFiltering);
+                    Stream.Dispose();
                 }
                 else
                 {
-                    Buffer = new MemoryStream();
-                    Stream.Position = 0;
-                    Stream.CopyTo(Buffer);
+                    if (Stream is MemoryStream mStream)
+                    {
+                        Buffer = mStream;
+                    }
+                    else
+                    {
+                        Buffer = new MemoryStream();
+                        Stream.Position = 0;
+                        Stream.CopyTo(Buffer);
 
-                    Stream.Dispose();
+                        Stream.Dispose();
+                    }
+
+                    SpriteTex.SetImage(Buffer.ToArray(), PixelFormat.RGBA, EnableFiltering);
                 }
-
-                SpriteTex.SetImage(Buffer.ToArray(), PixelFormat.RGBA, EnableFiltering);
             }
             finally {
-                Buffer.Dispose();
+                Buffer?.Dispose();
             }
 
             LoadSprite(Document, SpriteTex);

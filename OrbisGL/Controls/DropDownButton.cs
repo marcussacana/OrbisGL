@@ -80,7 +80,7 @@ namespace OrbisGL.Controls
             ArrowIcon.Position = ArrowPos;
 
 
-            //[WIP] Add "v" symbol in the dropdownbutton
+            //TODO: Add "v" symbol in the dropdownbutton
 
             GLObject.AddChild(Background);
             GLObject.AddChild(BackgroundContour);

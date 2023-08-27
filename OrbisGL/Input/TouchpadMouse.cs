@@ -146,7 +146,7 @@ namespace OrbisGL.Input
             CurrentPos = Vector2.Max(CurrentPos, Vector2.Zero);
             CurrentPos = Vector2.Min(CurrentPos, ScreenSize);
             
-            //[WIP] Consider the finger move speed and make it increase the distance somehow
+            //TODO: Consider the finger move speed and make it increase the distance somehow
         }
 
         private Vector2 GetXY(Vector2 Offset)

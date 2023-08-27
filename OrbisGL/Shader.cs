@@ -328,6 +328,8 @@ namespace OrbisGL
 #endif
         public static int GetProgram(string VertexSource, string FragmentSource)
         {
+            GLES20.GetError(); //Clear Any Old Error
+
             int Vertex = GetShader(GLES20.GL_VERTEX_SHADER, VertexSource);
             int Fragment = GetShader(GLES20.GL_FRAGMENT_SHADER, FragmentSource);
 

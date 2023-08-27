@@ -2,8 +2,19 @@
 {
     public static class Constants
     {
+        /// <summary>
+        /// A constant that can be used to convert ticks to second
+        /// </summary>
         public const int ORBIS_SECOND =  1000000;
+        /// <summary>
+        /// A constant that can can be used to convert ticks to milisecond
+        /// </summary>
         public const int ORBIS_MILISECOND = 1000;
+
+        /// <summary>
+        /// Tested on PS4 Slim, Must be checked in PS4 PRO
+        /// </summary>
+        public const ushort ORBIS_MAX_TEXTURE_RESOLUTION = 4096;
 
         public const uint ORBIS_MOUSE_BUTTON_PRIMARY = 0x00000001;
         public const uint ORBIS_MOUSE_BUTTON_SECONDARY = 0x00000002;
@@ -95,5 +106,10 @@
         public const int MaxTouchY = 941;
 
         public const int MaxDataNum = 0x40;
+        
+        
+        public const uint KB = 1024;
+        public const uint MB = KB * 1024;
+        public const uint GB = MB * 1024;
     }
 }

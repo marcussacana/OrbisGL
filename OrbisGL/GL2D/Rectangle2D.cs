@@ -10,6 +10,8 @@ namespace OrbisGL.GL2D
         bool FillMode;
 
         float _Rotate = 0f;
+        private Rectangle rectangle;
+
         public float Rotate
         {
             get => _Rotate;

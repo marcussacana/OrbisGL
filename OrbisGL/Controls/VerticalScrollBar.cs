@@ -160,7 +160,7 @@ namespace OrbisGL.Controls
 
             SetScrollByScrollValue(CurrentScroll);
 
-            //[WIP] Copy set visible from parent (Fix scroll bar visible in recursive scroll)
+            //TODO: Copy set visible from parent (Fix scroll bar visible in recursive scroll)
         }
 
         public void SetScrollByScrollValue(float Value)

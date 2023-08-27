@@ -137,7 +137,7 @@ namespace OrbisGL.GL2D
             if (Text == this.Text)
                 return;
 
-            //[WIP] Create a reusable font glyph texture table instead use libFreetype to redraw everything
+            //TODO: Create a reusable font glyph texture table instead use libFreetype to redraw everything
 
             this.Text = Text;
 
@@ -165,7 +165,7 @@ namespace OrbisGL.GL2D
 
             FontTexture.SetData(Width, Height, Buffer, PixelFormat.RGBA, true);
 
-            if (!VertexInitialized)
+            if (!VertexInitialized || Resized)
                 InternalRefreshVertex();
 
             if (Resized)

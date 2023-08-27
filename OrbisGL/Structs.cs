@@ -24,6 +24,33 @@ namespace OrbisGL
         }
     }
 
+    public struct GPUMemoryConfig
+    {
+        public ulong Video;
+        public ulong System;
+        public ulong Flexible;
+
+        /// <summary>
+        /// A memory setting optimized for homebrews (About 932MB)
+        /// </summary>
+        public static GPUMemoryConfig Default = new GPUMemoryConfig()
+        {
+            Video = 512 * Constants.MB,
+            System = 250 * Constants.MB,
+            Flexible = 170 * Constants.MB
+        };
+
+        /// <summary>
+        /// A memory setting optimized for 2D Games (About 2,7GB)
+        /// </summary>
+        public static GPUMemoryConfig HighMemory = new GPUMemoryConfig()
+        {
+            Video = 512 * Constants.MB,
+            System = 250 * Constants.MB,
+            Flexible = uint.MaxValue
+        };
+    }
+
     public struct DualshockSettings
     {
         /// <summary>
@@ -42,7 +69,7 @@ namespace OrbisGL
         /// </summary>
         public bool PadAsSelector;
 
-        //[WIP] Implement Deadzone and Sensitivity
+        //TODO: Implement Deadzone and Sensitivity
         //https://stackoverflow.com/questions/43240440/c-sharp-joystick-sensitivity-formula/43245072#43245072
     }
 

@@ -315,5 +315,5 @@ namespace GLTest
             GLApplication.ChangeResolution(width, height);
         }
 #endif
-    }
+        }
 }

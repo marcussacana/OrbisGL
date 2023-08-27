@@ -70,6 +70,19 @@ namespace OrbisGL.GL
 
         private Control[] ControllersSnaptshot => Controllers.ToArray();
 
+        private bool Initialized;
+
+
+        #if ORBIS
+        /// <summary>
+        /// Create an OpenGL ES 2 Environment 
+        /// </summary>
+        /// <param name="Width">Sets the rendering Width</param>
+        /// <param name="Height">Sets the rendering Height</param>
+        /// <param name="FramePerSecond">Set the default frame delay</param>
+        public Application(int Width, int Height, int FramePerSecond) : this(Width, Height, FramePerSecond, GPUMemoryConfig.Default)
+        {
+        }
 
         /// <summary>
         /// Create an OpenGL ES 2 Environment 
@@ -77,22 +90,32 @@ namespace OrbisGL.GL
         /// <param name="Width">Sets the rendering Width</param>
         /// <param name="Height">Sets the rendering Height</param>
         /// <param name="FramePerSecond">Set the default frame delay</param>
-        /// <param name="Handler">(WINDOWS ONLY) Set the Control Render Handler</param>
-        public Application(int Width, int Height, int FramePerSecond, IntPtr? Handler = null)
+        /// <param name="GPUMemoryConfig">Set the memory sharing settings</param>
+        public Application(int Width, int Height, int FramePerSecond, GPUMemoryConfig Config)
+        #else
+        /// <summary>
+        /// Create an OpenGL ES 2 Environment 
+        /// </summary>
+        /// <param name="Width">Sets the rendering Width</param>
+        /// <param name="Height">Sets the rendering Height</param>
+        /// <param name="FramePerSecond">Set the default frame delay</param>
+        /// <param name="Handler">Set the Control Render Handler</param>
+        public Application(int Width, int Height, int FramePerSecond, IntPtr Handler)
+        #endif
         {
 #if ORBIS
             FrameDelay = Constants.ORBIS_SECOND / FramePerSecond;
 #else
             FrameDelay = 1000 / FramePerSecond;
+            this.Handler = Handler;
 #endif
             Default = this;
 
             Coordinates2D.SetSize(Width, Height);
 
-            this.Handler = Handler ?? IntPtr.Zero;
             
 #if ORBIS
-            GLDisplay = new EGLDisplay(IntPtr.Zero, Width, Height);
+            GLDisplay = new EGLDisplay(IntPtr.Zero, Width, Height, Config.Video, Config.System, Config.Flexible);
             
             Kernel.LoadStartModule("libSceMbus.sprx");//For Mouse and Dualshock Support
 #endif
@@ -110,12 +133,8 @@ namespace OrbisGL.GL
         public void Run() => Run(CancellationToken.None);
         public virtual void Run(CancellationToken Abort)
         {
-#if !ORBIS
-            GLDisplay = new EGLDisplay(Handler, Width, Height);
-#else
-            UserService.Initialize();
-            UserService.HideSplashScreen();
-#endif
+
+            Initialize();
 
             if (Control.EnableSelector && !Controllers.Any(x => x.Focused))
             {
@@ -125,8 +144,6 @@ namespace OrbisGL.GL
                         break;
                 }
             }
-
-            GLES20.Viewport(0, 0, GLDisplay.Width, GLDisplay.Height);
 
             long LastDrawTick = 0;
             while (!Abort.IsCancellationRequested)
@@ -430,17 +447,38 @@ namespace OrbisGL.GL
             Control.Cursor.RefreshVertex();
         }
 
-#if !ORBIS
         public void DrawOnce()
         {
-            if (GLDisplay == null)
-                GLDisplay = new EGLDisplay(Handler, Width, Height);
-
+            Initialize();
+            
+#if ORBIS
+            var Ticks = DateTime.Now.Ticks;
+#else
             var Ticks = DateTime.Now.Ticks / 10;
+#endif
             ProcessEvents(Ticks);
             Draw(Ticks);
+#if ORBIS
+            GLDisplay.SwapBuffers();
+#endif
         }
-#endif        
+
+        private void Initialize()
+        {
+            if (Initialized)
+                return;
+            
+            Initialized = true;
+            
+#if ORBIS
+            UserService.Initialize();
+            UserService.HideSplashScreen();
+            GLES20.Viewport(0, 0, GLDisplay.Width, GLDisplay.Height);
+#else
+            if (GLDisplay == null)
+                GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.Video, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.Flexible);
+#endif
+        }
 
         public virtual void Draw(long Tick)
         {
@@ -458,8 +496,8 @@ namespace OrbisGL.GL
                 Object.Draw(Tick);
             }
 
-            Control.Selector.Draw(Tick);
-            Control.Cursor.Draw(Tick);
+            Control.Selector?.Draw(Tick);
+            Control.Cursor?.Draw(Tick);
         }
 
         /// <summary>
@@ -519,7 +557,7 @@ namespace OrbisGL.GL
             }
 
             GLDisplay.Dispose();
-            GLDisplay = new EGLDisplay(Handler, Width, Height);
+            GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.Video, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.Flexible);
 
             GLES20.Viewport(0, 0, Width, Height);
         }

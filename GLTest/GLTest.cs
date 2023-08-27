@@ -17,6 +17,9 @@ using Button = OrbisGL.Controls.Button;
 using Panel = OrbisGL.Controls.Panel;
 using TextBox = OrbisGL.Controls.TextBox;
 using Orbis.Game;
+using System.Drawing;
+using BCnEncoder.Encoder;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace GLTest
 {
@@ -110,14 +113,160 @@ void main(void) {
 #endif
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private unsafe void button3_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            var FS = new FolderBrowserDialog();
+            FS.SelectedPath = AppDomain.CurrentDomain.BaseDirectory;
+            if (FS.ShowDialog() != DialogResult.OK)
+                return;
+
+            var Images = Directory.GetFiles(FS.SelectedPath, "*.png", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(FS.SelectedPath, ".bmp", SearchOption.AllDirectories))
+                .Concat(Directory.GetFiles(FS.SelectedPath, ".jpg", SearchOption.AllDirectories)).ToArray();
+
+            for (int i = 0; i < Images.Length; i++)
+            {
+                var ImgFile = Images[i];
+                var OutImg = Path.Combine(Path.GetDirectoryName(ImgFile), Path.GetFileNameWithoutExtension(ImgFile) + ".dds");
+                using (var Img = new Bitmap(ImgFile))
+                {
+                    var MustResize = (Img.Width % 4) != 0 || (Img.Height % 4) != 0;
+
+                    Bitmap Output = Img;
+
+                    if (MustResize)
+                    {
+                        Output = new Bitmap(Img.Width + (4 - (Img.Width % 4)), Img.Height + (4 - (Img.Height % 4)));
+                        using (Graphics g = Graphics.FromImage(Output))
+                        {
+                            g.DrawImage(Img, 0, 0, Img.Width, Img.Height);
+                        }
+                    }
+
+                    bool Alpha = false;
+                    switch (Img.PixelFormat)
+                    {
+                        case System.Drawing.Imaging.PixelFormat.Format32bppArgb:
+                            Alpha = HasAlpha(Img);
+                            break;
+                    }
+
+                    var Format = Alpha ? BCnEncoder.Shared.CompressionFormat.BC3 : BCnEncoder.Shared.CompressionFormat.BC1;
+
+                    BcEncoder Encoder = new BcEncoder(Format);
+                    Encoder.Options.multiThreaded = true;
+                    Encoder.OutputOptions.quality = CompressionQuality.BestQuality;
+
+                    var Locker = Output.LockBits(new System.Drawing.Rectangle(0, 0, Output.Width, Output.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                    try
+                    {
+                        int SizeInBytes = Locker.Stride * Locker.Height;
+                        int SizeInDW = SizeInBytes / sizeof(uint);
+
+                        uint* pPixels = (uint*)Locker.Scan0.ToPointer();
+                        for (int x = 0; x < SizeInDW; x++)
+                        {
+                            const uint PickA = 0xFF000000;
+                            const uint PickR = 0x00FF0000;
+                            const uint PickG = 0x0000FF00;
+                            const uint PickB = 0x000000FF;
+
+                            const int MoveOneByte = 8;
+                            const int MoveTwoByte = 8 * 2;
+                            const int MoveThreeByte = 8 * 3;
+
+                            var ARGB = pPixels[x];
+                            var ABGR = (ARGB & PickA) | ((ARGB & PickR) >> MoveTwoByte) | (ARGB & PickG) | ((ARGB & PickB) << MoveTwoByte);
+                            pPixels[x] = ABGR;
+                        }
+
+
+                        Span<byte> bytes = new Span<byte>(Locker.Scan0.ToPointer(), SizeInBytes);
+                        var DDS = Encoder.EncodeToDds(bytes.ToArray(), Output.Width, Output.Height);
+                        using (var Stream = File.Create(OutImg))
+                            DDS.Write(Stream);
+                    }
+                    finally
+                    {
+                        Output.UnlockBits(Locker);
+                    }
+
+                    Output?.Dispose();
+
+                    Text = "Generating Textures " + i + "/" + Images.Length;
+                    System.Windows.Forms.Application.DoEvents();
+                }
+            }
+        }
+
+        private unsafe bool HasAlpha(Bitmap img)
+        {
+            var lck = img.LockBits(new System.Drawing.Rectangle(0, 0, img.Width, img.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            bool HasTransparecy = false;
+
+            try
+            {                
+                int SizeInBytes = lck.Stride * lck.Height;
+
+
+                uint* pPixels = (uint*)lck.Scan0.ToPointer();
+                for (int i = 0; i < SizeInBytes; i++)
+                {
+                    var ARGB = pPixels[i];
+                    if ((ARGB & 0xFF000000) != 255)
+                    {
+                        HasTransparecy = true;
+                        break;
+                    }
+                }
+            }
+            finally
+            {
+                img.UnlockBits(lck);
+            }
+            return HasTransparecy;
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            var AssetsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets\\");
+
+            var ImgExts = new string[] { ".png", ".jpg", ".bmp" };
+            var SndExts = new string[] { ".wav", ".mp3", ".acc" };
+
+            using (var Stream = File.Create("Assets.zip"))
+            {
+                var Archive = ZipFile.Create(Stream);
+
+                Archive.BeginUpdate();
+
+                var Files = Directory.GetFiles(AssetsDir, "*.*", SearchOption.AllDirectories);
+
+                foreach (var File in Files)
+                { 
+                    if (ImgExts.Contains(Path.GetExtension(File).ToLowerInvariant()))
+                    {
+                        if (Files.Contains(Path.ChangeExtension(File, ".dds")))
+                            continue;
+                    }
+
+                    if (SndExts.Contains(Path.GetExtension(File).ToLowerInvariant()))
+                    {
+                        if (Files.Contains(Path.ChangeExtension(File, ".ogg")))
+                            continue;
+                    }
+
+                    StaticDiskDataSource DataSource = new StaticDiskDataSource(File);
+
+                    Archive.Add(DataSource, File.Substring(AssetsDir.Length), CompressionMethod.Deflated);
+                }
+
+                Archive.CommitUpdate();
+            }
+
+            MessageBox.Show("Assets Archive Created", "GLTest");
         }
 
         private void button5_Click(object sender, EventArgs e)
@@ -126,7 +275,7 @@ void main(void) {
             var Rect = new Rectangle2D(1280, 720, true, ResLoader.GetResource("ThemeFrag"));
             //Rect.Offset = new Vector3(XOffset * Rand.Next(0, GLControl.Width), YOffset * Rand.Next(GLControl.Height), 1);
 
-            Rect.Program.SetUniform("Resolution", new Vector2(1280f, 720f));
+            Rect.Program.SetUniform("Resolution", 1280f, 720f);
 
             GLControl.GLApplication.AddObject(Rect);
 #endif
@@ -542,8 +691,9 @@ void main(void) {
 #endif
         }
 
-
+#if !ORBIS
         SongPlayer SP;
+#endif
 
         private void button23_Click(object sender, EventArgs e)
         {
