@@ -46,6 +46,9 @@ namespace OrbisGL
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (DataBuffer == null)
+                return 0;
+            
             if (ReadOffset >= Size)
             {
                 ReadOffset = 0;
@@ -84,7 +87,7 @@ namespace OrbisGL
 
         public override void Write(byte[] buffer, int InOffset, int count)
         {
-            if (count > Size)
+            /*if (count > Size)
                 throw new ArgumentOutOfRangeException("count");
 
             if (WriteOffset >= Size)
@@ -117,6 +120,37 @@ namespace OrbisGL
             }
 
             BufferedAmount += count;
+            */
+            
+            Write(new Span<byte>(buffer), InOffset, count);
+        }
+        
+        public void Write(Span<byte> buffer, int inOffset, int count)
+        {
+            if (count > Size)
+                throw new ArgumentOutOfRangeException("count");
+            
+            if (WriteOffset >= Size)
+            {
+                WriteOffset = 0;
+                WriteLoop++;
+            }
+
+            while (BufferedAmount + count >= Size)
+                Thread.Sleep(100);
+            
+            int bytesToWrite = Math.Min(count, Size - WriteOffset);
+
+            buffer.Slice(inOffset, bytesToWrite).CopyTo(DataBuffer.AsSpan(WriteOffset));
+
+            WriteOffset = (WriteOffset + bytesToWrite) % DataBuffer.Length;
+
+            BufferedAmount += bytesToWrite;
+
+            if (bytesToWrite < count)
+            {
+                Write(buffer, inOffset + bytesToWrite, count - bytesToWrite);
+            }
         }
 
         protected override void Dispose(bool disposing)

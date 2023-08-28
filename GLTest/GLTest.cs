@@ -20,6 +20,7 @@ using Orbis.Game;
 using System.Drawing;
 using BCnEncoder.Encoder;
 using ICSharpCode.SharpZipLib.Zip;
+using System.Diagnostics;
 
 namespace GLTest
 {
@@ -395,7 +396,7 @@ void main(void) {
             var AssetsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets\\");
 
             var ImgExts = new string[] { ".png", ".jpg", ".bmp" };
-            var SndExts = new string[] { ".wav", ".mp3", ".acc" };
+            var SndExts = new string[] { ".mp3", ".acc" };
 
             using (var Stream = File.Create("Assets.zip"))
             {
@@ -406,7 +407,10 @@ void main(void) {
                 var Files = Directory.GetFiles(AssetsDir, "*.*", SearchOption.AllDirectories);
 
                 foreach (var File in Files)
-                { 
+                {
+                    if (File.EndsWith("assets.zip", StringComparison.CurrentCultureIgnoreCase))
+                        continue;
+
                     if (ImgExts.Contains(Path.GetExtension(File).ToLowerInvariant()))
                     {
                         if (Files.Contains(Path.ChangeExtension(File, ".dds")))
@@ -415,9 +419,13 @@ void main(void) {
 
                     if (SndExts.Contains(Path.GetExtension(File).ToLowerInvariant()))
                     {
-                        if (Files.Contains(Path.ChangeExtension(File, ".ogg")))
+                        if (Files.Contains(Path.ChangeExtension(File, ".wav")))
                             continue;
                     }
+
+                    var AudioConv = Path.Combine(Path.GetDirectoryName(File), Path.GetFileNameWithoutExtension(File) + "_48khz.wav");
+                    if (Files.Contains(AudioConv))
+                        continue;
 
                     StaticDiskDataSource DataSource = new StaticDiskDataSource(File);
 
@@ -570,30 +578,52 @@ void main(void) {
 
         private void button13_Click(object sender, EventArgs e)
         {
-#if !ORBIS
-            var Line = new Line2D(new Line[]
+            var FS = new FolderBrowserDialog();
+            FS.SelectedPath = AppDomain.CurrentDomain.BaseDirectory;
+            if (FS.ShowDialog() != DialogResult.OK)
+                return;
+
+            var Audios = Directory.GetFiles(FS.SelectedPath, "*.ogg", SearchOption.AllDirectories);
+
+            foreach (var Audio in Audios)
             {
-                new Line()
-                {
-                    Begin = new Vector2(Rand.Next(0, GLControl.Width), Rand.Next(0, GLControl.Height)),
-                    End = new Vector2(Rand.Next(0, GLControl.Width), Rand.Next(0, GLControl.Height)),
-                },
-                new Line()
-                {
-                    Begin = new Vector2(Rand.Next(0, GLControl.Width), Rand.Next(0, GLControl.Height)),
-                    End = new Vector2(Rand.Next(0, GLControl.Width), Rand.Next(0, GLControl.Height)),
-                },
-                new Line()
-                {
-                    Begin = new Vector2(Rand.Next(0, GLControl.Width), Rand.Next(0, GLControl.Height)),
-                    End = new Vector2(Rand.Next(0, GLControl.Width), Rand.Next(0, GLControl.Height)),
-                }
-            }, false);
+                var OutFile = Path.Combine(Path.GetDirectoryName(Audio), Path.GetFileNameWithoutExtension(Audio) + "_48khz.wav");
+                if (Audio.Contains("_48khz") || File.Exists(OutFile))
+                    continue;
 
-            Line.SetVisibleRectangle(300, 100, 800, 500);
+                ConvertOgg(Audio, OutFile);
+            }
 
-            GLControl.GLApplication.AddObject(Line);
-#endif
+            MessageBox.Show("Converted!", "GLTEST");
+        }
+
+        private void ConvertOgg(string inputFile, string outputFile)
+        {
+            string arguments = $"-i \"{inputFile}\" -ar 48000 \"{outputFile}\"";
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            Process process = new Process
+            {
+                StartInfo = startInfo
+            };
+
+            process.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            process.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            process.WaitForExit();
         }
 
         private void button14_Click(object sender, EventArgs e)

@@ -13,7 +13,8 @@ namespace OrbisGL.Audio
         RingBuffer Buffer;
 
         private int handle;
-        
+
+        bool PausePlayer = false;
         bool StopPlayer = false;
 
         bool FloatSample = false;
@@ -31,6 +32,9 @@ namespace OrbisGL.Audio
             if (!(new uint[] { 256, 512, 768, 1024, 1280, 1536, 1792, 2048 }).Contains(Grain))
                 throw new ArgumentException("Grain must be one of the given values:\n256, 512, 768, 1024, 1280, 1536, 1792, 2048");
 
+            if (SamplingRate != 48000)
+                throw new ArgumentException("Playstation 4 accept only sampling rates at 48000hz");
+            
             this.Channels = Channels;
             this.Grain = Grain;
             this.Sampling = SamplingRate;
@@ -43,8 +47,8 @@ namespace OrbisGL.Audio
             {
                 var Rst = sceAudioOutInit();
                 
-                if (Rst < 0)
-                    throw new Exception($"Failed to Init the Audio Driver, Error Code: {Rst}");
+                if (Rst < 0 && Rst != unchecked((int)ORBIS_AUDIO_OUT_ERROR_ALREADY_INIT))
+                    throw new Exception($"Failed to Init the Audio Driver Library, Error Code: {Rst}");
                 
                 Initialized = true;
             }
@@ -55,6 +59,9 @@ namespace OrbisGL.Audio
                 while (SoundThread != null)
                     Thread.Sleep(100);
             }
+
+            if (Sampling == 0 || Grain == 0)
+                throw new Exception("Audio Output Proprieties not set.");
             
             Buffer = PCMBuffer;
 
@@ -78,7 +85,7 @@ namespace OrbisGL.Audio
                 Grain, Sampling, Param);
 
             if (handle < 0)
-                throw new Exception("Failed to Initialize the Audio Driver");
+                throw new Exception("Failed to Initialize the Audio Driver Instance");
 
             SetVolume(80);
 
@@ -100,25 +107,44 @@ namespace OrbisGL.Audio
                     short* WaveBuffer = (short*)(CurrentBuffer ? pWavBufferA : pWavBufferB);
                     float* fWaveBuffer = (float*)(CurrentBuffer ? pfWaveBufferA : pfWaveBufferB);
 
+                    while (PausePlayer)
+                    {
+                        Kernel.sceKernelUsleep(100);
+                    }
+
                     if (Buffer.Length >= BlockSize)
                     {
-                        int Readed = Buffer.Read(CurrentBuffer ? WavBufferA : WavBufferB, 0, BlockSize);
+                        int Readed = 0;
+
+                        if (FloatSample)
+                        {
+                            Readed = Buffer.Read(CurrentBuffer ? fWavBufferA : fWavBufferB, 0, BlockSize);
+                        }
+                        else
+                        {
+                            Readed = Buffer.Read(CurrentBuffer ? WavBufferA : WavBufferB, 0, BlockSize);
+                        }
 
                         if (Readed < BlockSize)
                         {
-                            for (int i = Readed / 2; i < Channels * sizeof(short); i++)
+                            if (FloatSample)
                             {
-                                WaveBuffer[i / 2] = 0;
+                                for (int i = Readed / 4; i < BlockSize/4; i++)
+                                {
+                                    fWaveBuffer[i / 4] = 0;
+                                }
+                            }
+                            else
+                            {
+                                for (int i = Readed / 2; i < BlockSize / 2; i++)
+                                {
+                                    WaveBuffer[i / 2] = 0;
+                                }
                             }
                         }
 
                         if (FloatSample)
                         {
-                            for (var i = 0; i < Grain * Channels; i++)
-                            {
-                                fWaveBuffer[i] = WaveBuffer[i] / 32768.0f;
-                            }
-
                             sceAudioOutOutput(handle, fWaveBuffer);
                         }
                         else
@@ -157,12 +183,12 @@ namespace OrbisGL.Audio
 
         public void Suspend()
         {
-            SoundThread?.Suspend();
+            PausePlayer = true;
         }
 
         public void Resume()
         {
-            SoundThread?.Resume();
+            PausePlayer = false;
         }
 
         public void Stop()
@@ -173,6 +199,10 @@ namespace OrbisGL.Audio
         public void Dispose()
         {
             StopPlayer = true;
+            if (handle != 0)
+                sceAudioOutClose(handle);
+            SoundThread?.Abort();
+            handle = 0;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -188,7 +218,7 @@ namespace OrbisGL.Audio
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
             public ulong[] reserved64;        // reserved
         }
-
+        
 
         [DllImport("libSceAudioOut.sprx")]
         static extern int sceAudioOutClose(int handle);

@@ -30,9 +30,6 @@ namespace OrbisGL
         public ulong System;
         public ulong Flexible;
 
-        /// <summary>
-        /// A memory setting optimized for homebrews (About 932MB)
-        /// </summary>
         public static GPUMemoryConfig Default = new GPUMemoryConfig()
         {
             Video = 512 * Constants.MB,
@@ -40,9 +37,6 @@ namespace OrbisGL
             Flexible = 170 * Constants.MB
         };
 
-        /// <summary>
-        /// A memory setting optimized for 2D Games (About 2,7GB)
-        /// </summary>
         public static GPUMemoryConfig HighMemory = new GPUMemoryConfig()
         {
             Video = 512 * Constants.MB,

@@ -93,6 +93,8 @@
                                   | ORBIS_AUDIO_VOLUME_FLAG_RL_CH | ORBIS_AUDIO_VOLUME_FLAG_RR_CH
                                   | ORBIS_AUDIO_VOLUME_FLAG_BL_CH | ORBIS_AUDIO_VOLUME_FLAG_BR_CH;
 
+        public const uint ORBIS_AUDIO_OUT_ERROR_ALREADY_INIT = 0x8026000E;
+
 
         public const int ORBIS_IME_MAX_TEXT_LENGTH = 2048;
         public const int ORBIS_IME_KEYBOARD_MAX_NUMBER = 5;

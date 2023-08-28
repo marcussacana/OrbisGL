@@ -113,9 +113,15 @@ namespace OrbisGL.GL2D
             return (Y / MaxHeight);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this GLObject2D Obj) => Obj.Position.GetMiddle(Obj.Width, Obj.Height);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this Vector2 Size, int Width, int Height) => GetMiddle(Size, new Vector2(Width, Height));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 GetMiddle(this GLObject2D Obj, GLObject2D Child) => GetMiddle(new Vector2(Obj.Width, Obj.Height), new Vector2(Child.Width, Child.Height));
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this Vector2 Size, Vector2 Child)
         {

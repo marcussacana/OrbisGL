@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Orbis.Internals;
 
 namespace OrbisGL.Audio
 {
     public class WavePlayer : IAudioPlayer
     {
+        bool _ThreadStarted = false;
         bool Stopped = true;
         bool Paused;
         BinaryReader Stream;
@@ -157,14 +159,23 @@ namespace OrbisGL.Audio
         {
             if (Driver == null)
                 throw new Exception("Audio Output Driver Not Set");
+
+            if (Stream == null)
+                return;
             
             if (PlayerThread == null)
             {
+                _ThreadStarted = false;
                 PlayerThread = new Thread(Player);
                 PlayerThread.Name = "WavePlayer";
                 PlayerThread.Start();
             }
 
+            while (!_ThreadStarted)
+            {
+                Kernel.sceKernelUsleep(1000);
+            }
+            
             Paused = false;
         }
 
@@ -175,7 +186,7 @@ namespace OrbisGL.Audio
                 Stream.BaseStream.Position = DataOffset;
                 var EndPos = DataOffset + DataSize;
 
-                const int Grain = 256;
+                const int Grain = 512;
         
                 Driver.SetProprieties(Format.WChannels, Grain, Format.DSamplesPerSec);
                 Driver.Play(Buffer);
@@ -185,6 +196,8 @@ namespace OrbisGL.Audio
                 byte[] DataBuffer = new byte[BlockSize];
 
                 Stopped = false;
+
+                _ThreadStarted = true;
 
                 try
                 {

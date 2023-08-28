@@ -127,7 +127,7 @@ namespace GLTest
             // button7
             // 
             this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button7.Location = new System.Drawing.Point(348, 5);
+            this.button7.Location = new System.Drawing.Point(374, 5);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(49, 23);
             this.button7.TabIndex = 6;
@@ -138,7 +138,7 @@ namespace GLTest
             // button8
             // 
             this.button8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button8.Location = new System.Drawing.Point(472, 5);
+            this.button8.Location = new System.Drawing.Point(491, 5);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(76, 23);
             this.button8.TabIndex = 7;
@@ -195,9 +195,9 @@ namespace GLTest
             this.button13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.button13.Location = new System.Drawing.Point(297, 5);
             this.button13.Name = "button13";
-            this.button13.Size = new System.Drawing.Size(45, 23);
+            this.button13.Size = new System.Drawing.Size(71, 23);
             this.button13.TabIndex = 12;
-            this.button13.Text = "Line";
+            this.button13.Text = "Conv Ogg";
             this.button13.UseVisualStyleBackColor = true;
             this.button13.Click += new System.EventHandler(this.button13_Click);
             // 
@@ -226,9 +226,9 @@ namespace GLTest
             // button16
             // 
             this.button16.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button16.Location = new System.Drawing.Point(403, 5);
+            this.button16.Location = new System.Drawing.Point(429, 5);
             this.button16.Name = "button16";
-            this.button16.Size = new System.Drawing.Size(63, 23);
+            this.button16.Size = new System.Drawing.Size(56, 23);
             this.button16.TabIndex = 15;
             this.button16.Text = "Triangle";
             this.button16.UseVisualStyleBackColor = true;
@@ -259,9 +259,9 @@ namespace GLTest
             // button19
             // 
             this.button19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button19.Location = new System.Drawing.Point(554, 5);
+            this.button19.Location = new System.Drawing.Point(573, 5);
             this.button19.Name = "button19";
-            this.button19.Size = new System.Drawing.Size(77, 23);
+            this.button19.Size = new System.Drawing.Size(58, 23);
             this.button19.TabIndex = 18;
             this.button19.Text = "Inspector";
             this.button19.UseVisualStyleBackColor = true;

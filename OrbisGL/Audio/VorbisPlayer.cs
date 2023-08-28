@@ -13,44 +13,41 @@ namespace OrbisGL.Audio
         VorbisReader Reader;
         IAudioOut Driver;
         public bool Playing => Paused;
-
+        
         public TimeSpan? CurrentTime => Reader.TimePosition;
-
-        public void Close()
-        {
-            Stopped = true;
-        }
-
-        public void Dispose()
-        {
-            Driver?.Dispose();
-            Reader?.Dispose();
-        }
-
         public void Open(Stream File)
         {
             Paused = true;
-
             Reader = new VorbisReader(File, true);
+            
+            if (Reader.SampleRate != 48000)
+            {
+                Reader = null;
+                throw new Exception("Currently Only Audio in 48khz is supported");
+            }
         }
 
         private unsafe void Player()
         {
-            Driver.SetProprieties(Reader.Channels, 256, (uint)Reader.SampleRate, true);
+            if (Reader == null)
+                return;
+            
+            Driver.SetProprieties(Reader.Channels, 512, (uint)Reader.SampleRate, true);
 
             int SamplesPerSecond = Reader.SampleRate * Reader.Channels;
 
             byte[] SamplesBuffer = new byte[SamplesPerSecond * sizeof(float)];
-
+            
             try
             {
                 using (RingBuffer OutBuffer = new RingBuffer(SamplesBuffer.Length * 2))
                 {
+                    Driver.Play(OutBuffer);
+                    
                     fixed (void* pSamples = &SamplesBuffer[0])
                     {
-                        Span<float> SamplesSpan = new Span<float>(pSamples, SamplesBuffer.Length);
-
-                        byte* pBuffer = (byte*)pSamples;
+                        Span<float> SamplesSpan = new Span<float>(pSamples, SamplesPerSecond);
+                        
                         while (!Stopped)
                         {
                             while (Paused)
@@ -86,6 +83,9 @@ namespace OrbisGL.Audio
         {
             if (Driver == null)
                 throw new Exception("Audio Output Driver Not Set");
+
+            if (Reader == null)
+                return;
             
             if (DecoderThread == null)
             {
@@ -106,5 +106,19 @@ namespace OrbisGL.Audio
         {
             Reader.SeekTo(Duration);
         }
+
+        public void Close()
+        {
+            Stopped = true;
+        }
+
+        public void Dispose()
+        {
+            Stopped = true;
+            DecoderThread?.Abort();
+            Driver?.Dispose();
+            Reader?.Dispose();
+        }
+
     }
 }
