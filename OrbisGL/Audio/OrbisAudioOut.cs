@@ -1,6 +1,5 @@
 ﻿using Orbis.Internals;
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -10,6 +9,13 @@ namespace OrbisGL.Audio
 {
     public class OrbisAudioOut : IAudioOut
     {
+        static OrbisAudioOut()
+        {
+            //Made to early JIT the methods for faster initialization
+            //when the user ask to play some audio
+            new OrbisAudioOut().Player();
+        }
+        
         RingBuffer Buffer;
 
         private int handle;
@@ -26,6 +32,8 @@ namespace OrbisGL.Audio
         Thread SoundThread;
 
         private static bool Initialized;
+
+        public static bool Ready { get; private set; }
 
         public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false)
         {
@@ -65,6 +73,7 @@ namespace OrbisGL.Audio
             
             Buffer = PCMBuffer;
 
+            Ready = true;
             SoundThread = new Thread(Player);
             SoundThread.Name = "AudioOut";
             SoundThread.Start();
@@ -72,6 +81,12 @@ namespace OrbisGL.Audio
 
         private unsafe void Player()
         {
+            if (!Ready)
+            {
+                Ready = true;
+                return;
+            }
+
             uint Param;
 
             if (FloatSample)
@@ -102,63 +117,67 @@ namespace OrbisGL.Audio
             fixed (byte* pWavBufferA = WavBufferA, pWavBufferB = WavBufferB)
             fixed (byte* pfWaveBufferA = fWavBufferA, pfWaveBufferB = fWavBufferB)
             {
-                while (!StopPlayer)
+                try
                 {
-                    short* WaveBuffer = (short*)(CurrentBuffer ? pWavBufferA : pWavBufferB);
-                    float* fWaveBuffer = (float*)(CurrentBuffer ? pfWaveBufferA : pfWaveBufferB);
-
-                    while (PausePlayer)
+                    while (!StopPlayer)
                     {
-                        Kernel.sceKernelUsleep(100);
-                    }
+                        short* WaveBuffer = (short*)(CurrentBuffer ? pWavBufferA : pWavBufferB);
+                        float* fWaveBuffer = (float*)(CurrentBuffer ? pfWaveBufferA : pfWaveBufferB);
 
-                    if (Buffer.Length >= BlockSize)
-                    {
-                        int Readed = 0;
-
-                        if (FloatSample)
+                        while (PausePlayer)
                         {
-                            Readed = Buffer.Read(CurrentBuffer ? fWavBufferA : fWavBufferB, 0, BlockSize);
-                        }
-                        else
-                        {
-                            Readed = Buffer.Read(CurrentBuffer ? WavBufferA : WavBufferB, 0, BlockSize);
+                            Kernel.sceKernelUsleep(100);
                         }
 
-                        if (Readed < BlockSize)
+                        if (Buffer.Length >= BlockSize)
                         {
+                            int Readed = 0;
+
                             if (FloatSample)
                             {
-                                for (int i = Readed / 4; i < BlockSize/4; i++)
-                                {
-                                    fWaveBuffer[i / 4] = 0;
-                                }
+                                Readed = Buffer.Read(CurrentBuffer ? fWavBufferA : fWavBufferB, 0, BlockSize);
                             }
                             else
                             {
-                                for (int i = Readed / 2; i < BlockSize / 2; i++)
+                                Readed = Buffer.Read(CurrentBuffer ? WavBufferA : WavBufferB, 0, BlockSize);
+                            }
+
+                            if (Readed < BlockSize)
+                            {
+                                if (FloatSample)
                                 {
-                                    WaveBuffer[i / 2] = 0;
+                                    for (int i = Readed / 4; i < BlockSize / 4; i++)
+                                    {
+                                        fWaveBuffer[i / 4] = 0;
+                                    }
+                                }
+                                else
+                                {
+                                    for (int i = Readed / 2; i < BlockSize / 2; i++)
+                                    {
+                                        WaveBuffer[i / 2] = 0;
+                                    }
                                 }
                             }
-                        }
 
-                        if (FloatSample)
-                        {
-                            sceAudioOutOutput(handle, fWaveBuffer);
+                            if (FloatSample)
+                            {
+                                sceAudioOutOutput(handle, fWaveBuffer);
+                            }
+                            else
+                            {
+                                sceAudioOutOutput(handle, WaveBuffer);
+                            }
+
+                            CurrentBuffer = !CurrentBuffer;
                         }
                         else
                         {
-                           sceAudioOutOutput(handle, WaveBuffer);
+                            Kernel.sceKernelUsleep(1000);
                         }
-
-                        CurrentBuffer = !CurrentBuffer;
-                    }
-                    else
-                    {
-                        Kernel.sceKernelUsleep(1000);
                     }
                 }
+                catch (ThreadAbortException abort) { }
             }
 
             sceAudioOutOutput(handle, null);
@@ -199,9 +218,14 @@ namespace OrbisGL.Audio
         public void Dispose()
         {
             StopPlayer = true;
+            SetVolume(0);
+            
+            while (StopPlayer)
+                Thread.Sleep(100);
+            
             if (handle != 0)
                 sceAudioOutClose(handle);
-            SoundThread?.Abort();
+            
             handle = 0;
         }
 

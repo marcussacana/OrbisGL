@@ -38,6 +38,7 @@ namespace OrbisGL.Audio
         public void Dispose()
         {
             Close();
+            Driver?.Dispose();
             Stream?.Dispose();
         }
 

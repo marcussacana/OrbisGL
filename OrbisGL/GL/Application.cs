@@ -452,7 +452,7 @@ namespace OrbisGL.GL
             Initialize();
             
 #if ORBIS
-            var Ticks = DateTime.Now.Ticks;
+            Kernel.sceRtcGetCurrentTick(out long Ticks);
 #else
             var Ticks = DateTime.Now.Ticks / 10;
 #endif
