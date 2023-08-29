@@ -73,9 +73,9 @@ namespace OrbisGL.GL2D
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
         /// <param name="EnableFiltering">Enables texture Linear filtering</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
-        public SpriteAtlas2D(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering, bool EnableCompression) : this()
+        public SpriteAtlas2D(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering) : this()
         {
-            LoadSprite(Document, LoadFile, EnableFiltering, EnableCompression);
+            LoadSprite(Document, LoadFile, EnableFiltering);
         }
 
         /// <summary>
@@ -118,9 +118,8 @@ namespace OrbisGL.GL2D
         /// <param name="Document">An Adobe Animate texture atlas info</param>
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
         /// <param name="EnableFiltering">Enables texture Linear filtering</param>
-        /// <param name="EnableCompression">Enables texture compression</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
-        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering, bool EnableCompression)
+        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering)
         {
             var TexturePath = Document.DocumentElement.GetAttribute("imagePath");
 
