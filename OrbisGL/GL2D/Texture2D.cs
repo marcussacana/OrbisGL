@@ -10,6 +10,13 @@ namespace OrbisGL.GL2D
         int TextureUniformLocation;
         int MirrorUniformLocation;
 
+        
+        /// <summary>
+        /// When true the vertex will update the Texture2D instance size to fit the texture size automatically.
+        /// </summary>
+        public bool AutoSize { get; set; } = true;
+
+
         float _Rotate = 0f;
         public float Rotate
         {
@@ -54,7 +61,7 @@ namespace OrbisGL.GL2D
 
             var MaxSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
 
-            if (Texture != null)
+            if (Texture != null && AutoSize)
             {
                 Width = Texture.Width;
                 Height = Texture.Height;
