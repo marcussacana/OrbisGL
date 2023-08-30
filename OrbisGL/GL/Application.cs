@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Orbis.Internals;
 using OrbisGL.Controls;
@@ -133,7 +132,6 @@ namespace OrbisGL.GL
         public void Run() => Run(CancellationToken.None);
         public virtual void Run(CancellationToken Abort)
         {
-
             Initialize();
 
             if (Control.EnableSelector && !Controllers.Any(x => x.Focused))
