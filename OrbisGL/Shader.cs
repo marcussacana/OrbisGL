@@ -71,7 +71,14 @@ namespace OrbisGL
             int hShader = GLES20.CreateShader(Type);
 
             if (hShader == 0)
-                throw new Exception("Failed to Create the Shader");
+            {
+                var Error = GLES20.GetError();
+                
+                if (Error == 0)
+                    throw new Exception("Failed to Create the Shader, OpenGL Not Initialized?");
+                
+                throw new Exception("Failed to Create the Shader: 0x" + Error.ToString("X8"));
+            }
 
             IntPtr Buffer = Marshal.AllocHGlobal(Data.Length);
             Marshal.Copy(Data, 0, Buffer, Data.Length);
