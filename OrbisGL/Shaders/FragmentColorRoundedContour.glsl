@@ -44,6 +44,6 @@ void main(void)
 
     fragColor = vec4(c, alpha);
     
-    if ((UV.x < VisibleRect.x || UV.y < VisibleRect.y || UV.x > VisibleRect.z + VisibleRect.x || UV.y > VisibleRect.w + VisibleRect.y) && VisibleRect != vec4(0))
+    if (VisibleRect != vec4(0) && (UV.x < VisibleRect.x || UV.y < VisibleRect.y || UV.x > VisibleRect.z + VisibleRect.x || UV.y > VisibleRect.w + VisibleRect.y))
         discard;
 }
