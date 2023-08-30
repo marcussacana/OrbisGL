@@ -58,6 +58,7 @@ namespace OrbisGL
 
                 throw new Exception("Failed to Compile the Shader: " + Info);
             }
+
 #if ORBIS
             AddShaderToCache(Type, Source, hShader);
 #endif
@@ -345,6 +346,8 @@ namespace OrbisGL
 
         static int GetProgram(int hVertex, int hFragment)
         {
+            GLES20.GetError();
+
             int Program = GLES20.CreateProgram();
 
             GLES20.AttachShader(Program, hVertex);
@@ -366,7 +369,7 @@ namespace OrbisGL
                 throw new Exception("Failed to Initialize the GL Program: " + Info);
             }
 
-            int LastError = State.GetLastGLError();
+            int LastError = GLES20.GetError();
             if (LastError != GLES20.GL_NO_ERROR)
             {
                 throw new Exception("OpenGL Error: 0x" + LastError.ToString("X8"));

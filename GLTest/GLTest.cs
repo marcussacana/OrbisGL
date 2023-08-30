@@ -21,6 +21,7 @@ using System.Drawing;
 using BCnEncoder.Encoder;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Diagnostics;
+using Orbis.BG;
 
 namespace GLTest
 {
@@ -883,14 +884,14 @@ void main(void) {
         }
 
 #if !ORBIS
-        SongPlayer SP;
+        StartMenu SM;
 #endif
 
         private void button23_Click(object sender, EventArgs e)
         {
 #if !ORBIS
             FormBorderStyle = FormBorderStyle.None;
-            Size = new System.Drawing.Size(1920, 1080);
+            Size = new Size(1920, 1080);
 
             WindowState = FormWindowState.Maximized;
 
@@ -898,18 +899,12 @@ void main(void) {
 
             panel1.Visible = false;
 
-            var SJ = File.ReadAllText("assets\\preload\\data\\bopeebo\\bopeebo.json");
-            var SI = JsonConvert.DeserializeObject<SongInfo>(SJ);
+            SM = new StartMenu();
 
-            SP = new SongPlayer(SI);
-
-            SP.Load((i) =>
+            SM.Load(i =>
             {
-                if (SP.Loaded)
-                {
-                    GLControl.GLApplication.AddObject(SP);
-                    SP.Begin();
-                }
+                if (SM.Loaded)
+                    GLControl.GLApplication.AddObject(SM);
             });
 #endif
         }

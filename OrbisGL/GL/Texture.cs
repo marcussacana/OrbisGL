@@ -88,6 +88,8 @@ namespace OrbisGL.GL
             if (Width * Height > Constants.ORBIS_MAX_TEXTURE_SIZE * Constants.ORBIS_MAX_TEXTURE_SIZE)
                 throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_SIZE}x{Constants.ORBIS_MAX_TEXTURE_SIZE}");
 
+            GLES20.GetError(); //Clear any old error
+
             Bind(Active());
             
             this.Width = Width;
@@ -95,7 +97,18 @@ namespace OrbisGL.GL
 
             fixed (byte* pData = Data)
             {
-                int blockSize = (Format == TextureCompressionFormats.RGBA_S3TC_DXT1_EXT) ? 8 : 16;
+                int blockSize;
+                switch (Format)
+                {
+                    case TextureCompressionFormats.RGB_S3TC_DXT1_EXT:
+                    case TextureCompressionFormats.RGBA_S3TC_DXT1_EXT:
+                        blockSize = 8;
+                        break;
+                    default:
+                        blockSize = 16;
+                        break;
+                }
+
                 int TexSize = ((Width + 3) / 4) * ((Height + 3) / 4) * blockSize;
 
                 GLES20.CompressedTexImage2D(TextureType, 0, (int)Format, Width, Height, 0, TexSize, new IntPtr(pData));
@@ -118,7 +131,7 @@ namespace OrbisGL.GL
             }
         }
 
-        [Obsolete("Slow, use SetDataCompressed instead", false)]
+        [Obsolete("Slow, use SetDDS instead", false)]
         public void SetImage(byte[] Data, PixelFormat TextureFormat, bool EnableFiltering)
         {
             int Width, Height;
