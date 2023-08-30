@@ -213,15 +213,17 @@ namespace OrbisGL.Audio
                             Thread.Sleep(100);
                     }
                 }
-                catch (Exception ex)
-                {
-                    throw;
-                }
                 finally
                 {
+                    //Wait the Audio Output Driver read the reaming buffered data
+                    while (Buffer.Length > 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    
                     Stopped = true;
-                    Driver.Stop();
                     PlayerThread = null;
+                    Driver?.Stop();
                 }
             }
         }

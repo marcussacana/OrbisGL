@@ -6,6 +6,16 @@ namespace OrbisGL
 {
     public sealed class RingBuffer : Stream
     {
+        
+        static RingBuffer()
+        {
+            //Early JIT the class for lower delay in the first usage
+            new Thread(() => {
+                using (var tmp = new RingBuffer(10))
+                    tmp.Write(new byte[10], 0, 10);
+            }).Start();
+        }
+        
         private int Size, ReadOffset, WriteOffset, BufferedAmount;
         private long ReadLoop, WriteLoop;
 
@@ -87,41 +97,6 @@ namespace OrbisGL
 
         public override void Write(byte[] buffer, int InOffset, int count)
         {
-            /*if (count > Size)
-                throw new ArgumentOutOfRangeException("count");
-
-            if (WriteOffset >= Size)
-            {
-                WriteOffset = 0;
-                WriteLoop++;
-            }
-
-            while (BufferedAmount + count >= Size)
-                Thread.Sleep(100);
-
-            if (WriteOffset + count <= Size)
-            {
-                // Write the entire chunk at once if it fits in the buffer.
-                Array.Copy(buffer, InOffset, DataBuffer, WriteOffset, count);
-
-                WriteOffset += count;
-            }
-            else
-            {
-                // Write in two parts if the chunk wraps around the end of the buffer.
-                int firstPartSize = Size - WriteOffset;
-                int secondPartSize = count - firstPartSize;
-
-                Array.Copy(buffer, InOffset, DataBuffer, WriteOffset, firstPartSize);
-                Array.Copy(buffer, InOffset + firstPartSize, DataBuffer, 0, secondPartSize);
-
-                WriteOffset = secondPartSize;
-                WriteLoop++;
-            }
-
-            BufferedAmount += count;
-            */
-            
             Write(new Span<byte>(buffer), InOffset, count);
         }
         

@@ -148,14 +148,14 @@ namespace OrbisGL.Audio
                                 {
                                     for (int i = Readed / 4; i < BlockSize / 4; i++)
                                     {
-                                        fWaveBuffer[i / 4] = 0;
+                                        fWaveBuffer[i] = 0;
                                     }
                                 }
                                 else
                                 {
                                     for (int i = Readed / 2; i < BlockSize / 2; i++)
                                     {
-                                        WaveBuffer[i / 2] = 0;
+                                        WaveBuffer[i] = 0;
                                     }
                                 }
                             }

@@ -60,17 +60,18 @@ namespace OrbisGL.Audio
                             OutBuffer.Write(SamplesBuffer, 0, ReadedBytes);
                         }
                     }
+                    
+                    while (OutBuffer.Length > 0)
+                    {
+                        Thread.Sleep(100);
+                    }
                 }
-            }
-            catch 
-            {
-                throw;
             }
             finally
             {
                 DecoderThread = null;
                 Stopped = true;
-                Driver.Stop();
+                Driver?.Stop();
             }
         }
 
