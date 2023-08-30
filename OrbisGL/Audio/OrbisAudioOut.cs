@@ -35,6 +35,8 @@ namespace OrbisGL.Audio
 
         public static bool Ready { get; private set; }
 
+        public bool IsRunnning => SoundThread.IsAlive;
+
         public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false)
         {
             if (!(new uint[] { 256, 512, 768, 1024, 1280, 1536, 1792, 2048 }).Contains(Grain))
@@ -184,6 +186,7 @@ namespace OrbisGL.Audio
             sceAudioOutClose(handle);
             StopPlayer = false;
             SoundThread = null;
+            handle = 0;
         }
 
         public void SetVolume(byte Value)
@@ -219,14 +222,6 @@ namespace OrbisGL.Audio
         {
             StopPlayer = true;
             SetVolume(0);
-            
-            while (StopPlayer)
-                Thread.Sleep(100);
-            
-            if (handle != 0)
-                sceAudioOutClose(handle);
-            
-            handle = 0;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

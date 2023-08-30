@@ -9,6 +9,12 @@ namespace OrbisGL.Audio
 {
     public interface IAudioPlayer : IDisposable
     {
+        /// <summary>
+        /// Represents an event that is triggered when a playing track ends (excluding loops).
+        /// Note: This event is invoked from a background thread, and any assigned methods should not directly interact with OpenGL.
+        /// </summary>
+        event EventHandler OnTrackEnd;
+        bool Loop { get; set; }
         bool Playing { get; }
 
         TimeSpan? CurrentTime { get; }

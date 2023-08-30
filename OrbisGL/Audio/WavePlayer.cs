@@ -25,6 +25,9 @@ namespace OrbisGL.Audio
 
         Thread PlayerThread = null;
 
+        public event EventHandler OnTrackEnd;
+        public bool Loop { get; set; }
+
         public TimeSpan? CurrentTime { get; private set; }
 
         public bool Playing => !Paused && Stream != null && !Stopped;
@@ -209,14 +212,23 @@ namespace OrbisGL.Audio
 
                         CurrentTime += TimeSpan.FromSeconds(1);
 
+                        if (Loop && Stream.BaseStream.Position >= EndPos)
+                        {
+                            Stream.BaseStream.Position = 0;
+                            CurrentTime = TimeSpan.Zero;
+                        }
+
                         while (Paused && !Stopped)
                             Thread.Sleep(100);
                     }
+
+                    if (!Stopped)
+                        OnTrackEnd?.Invoke(this, EventArgs.Empty);
                 }
                 finally
                 {
                     //Wait the Audio Output Driver read the reaming buffered data
-                    while (Buffer.Length > 0)
+                    while (Buffer.Length > 0 && Driver.IsRunnning)
                     {
                         Thread.Sleep(100);
                     }

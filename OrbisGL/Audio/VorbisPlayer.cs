@@ -12,9 +12,15 @@ namespace OrbisGL.Audio
         bool Paused;
         VorbisReader Reader;
         IAudioOut Driver;
+
+        public event EventHandler OnTrackEnd;
+
         public bool Playing => Paused;
         
         public TimeSpan? CurrentTime => Reader.TimePosition;
+
+        public bool Loop { get; set; }
+
         public void Open(Stream File)
         {
             Paused = true;
@@ -58,10 +64,19 @@ namespace OrbisGL.Audio
                             int ReadedBytes = Readed * sizeof(float);
 
                             OutBuffer.Write(SamplesBuffer, 0, ReadedBytes);
+
+                            if (Readed == 0)
+                            {
+                                if (Loop)
+                                    Reader.TimePosition = TimeSpan.Zero;
+                                break;
+                            }
                         }
+
+                        OnTrackEnd?.Invoke(this, EventArgs.Empty);
                     }
                     
-                    while (OutBuffer.Length > 0)
+                    while (OutBuffer.Length > 0 && Driver.IsRunnning)
                     {
                         Thread.Sleep(100);
                     }
