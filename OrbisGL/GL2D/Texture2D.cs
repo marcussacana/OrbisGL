@@ -59,7 +59,7 @@ namespace OrbisGL.GL2D
             //   |            |
             //   2 ---------- 3
 
-            var MaxSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
+            var MaxSize = new Vector2(ZoomMaxWidth, ZoomMaxHeight);
 
             if (Texture != null && AutoSize)
             {

@@ -14,9 +14,10 @@ namespace OrbisGL.GL2D
 
         public int Width { get; set; }
         public int Height { get; set; }
+
         public bool InRoot => Parent == null;
         public virtual RGBColor Color { get; set; } = RGBColor.White;
-        public virtual byte Opacity { get; set; } = 255; 
+        public virtual byte Opacity { get; set; } = 255;
 
         public IEnumerable<GLObject2D> Childs => Children;
 
@@ -30,6 +31,60 @@ namespace OrbisGL.GL2D
             }
         }
 
+        /// <summary>
+        /// A coordinate with the current zoom applied,
+        /// if you use <see cref="Position"/> and the zoom at 200%,
+        /// The poistion value will be keep the same, but the real position
+        /// has been changed due the zoom, therefore you can use <see cref="ZoomPosition"/> 
+        /// to get the real position after the zoom be applied
+        /// </summary>
+        public Vector2 ZoomPosition
+        {
+            get
+            {
+                return new Vector2(Offset.X / XOffset, Offset.Y / YOffset);
+            }
+            set
+            {
+                Offset = new Vector2(XOffset * value.X, YOffset * value.Y);
+            }
+        }
+
+        public int ZoomWidth
+        {
+            get
+            {
+                return (int)PointToX(XToPoint(Width, ZoomMaxWidth), Coordinates2D.Width);
+            }
+            set
+            {
+                Width = (int)PointToX(XToPoint(value, Coordinates2D.Width), Width);
+            }
+        }
+
+        public int ZoomHeight
+        {
+            get
+            {
+                return (int)PointToY(YToPoint(Height, ZoomMaxHeight), Coordinates2D.Height);
+            }
+            set
+            {
+                Height = (int)PointToY(YToPoint(value, Coordinates2D.Height), Height);
+            }
+        }
+
+        /// <summary>
+        /// The MaxWidth to be computed at <see cref="XToPoint(float, int)"/>
+        /// </summary>
+        protected int ZoomMaxWidth => (int)(Coordinates2D.Width * Zoom);
+
+        /// <summary>
+        /// The MaxHeight to be computed at <see cref="YToPoint(float, int)"/>
+        /// </summary>
+        protected int ZoomMaxHeight => (int)(Coordinates2D.Height * Zoom);
+
+
         public Rectangle? VisibleRectangle { get; protected set; }
         public Rectangle Rectangle
         {
@@ -37,14 +92,13 @@ namespace OrbisGL.GL2D
             {
                 return new Rectangle(Position.X, Position.Y, Width, Height);
             }
-            set 
+            set
             {
                 Position = value.Position;
                 Width = (int)value.Width;
                 Height = (int)value.Height;
             }
         }
-
 
         protected GLObject2D Parent = null;
 
@@ -122,7 +176,7 @@ namespace OrbisGL.GL2D
         public virtual void SetVisibleRectangle(Rectangle Parent)
         {
             if (Parent.IsEmpty())
-            { 
+            {
                 InvisibleRect = true;
                 return;
             }
@@ -155,7 +209,7 @@ namespace OrbisGL.GL2D
             AbsArea.Position += AbsolutePosition;
 
             foreach (var Child in Childs)
-            { 
+            {
                 var AbsChildArea = new Rectangle(Child.AbsolutePosition.X, Child.AbsolutePosition.Y, Child.Width, Child.Height);
                 var Bounds = Rectangle.GetChildBounds(AbsArea, AbsChildArea);
 
@@ -183,7 +237,6 @@ namespace OrbisGL.GL2D
         /// <summary>
         /// Scale object coordinates, where 1.0 = 100%, and 0.5 = 200%
         /// </summary>
-        /// <param name="Value"></param>
         public void SetZoom(float Value = 1f)
         {
             SetChildrenZoom(Value);
@@ -196,8 +249,6 @@ namespace OrbisGL.GL2D
 
             var VirtualSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
             PixelOffset = MeasurePixelOffset(VirtualSize);
-
-            Position = Position;
 
             foreach (var Child in Childs)
                 Child.SetChildrenZoom(Zoom);
@@ -258,7 +309,7 @@ namespace OrbisGL.GL2D
             {
                 Child.Dispose();
             }
-            
+
             base.Dispose();
         }
     }

@@ -121,6 +121,7 @@
     <Compile Include="FreeTypeLib\GlyphInfo.cs" />
     <Compile Include="GL2D\Blank2D.cs" />
     <Compile Include="GL2D\Coordinates2D.cs" />
+    <Compile Include="Geometry.cs" />
     <Compile Include="GL2D\Line2D.cs" />
     <Compile Include="GL2D\PartialElipse2D.cs" />
     <Compile Include="GL2D\GLObject2D.cs" />

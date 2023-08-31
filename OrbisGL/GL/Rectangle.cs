@@ -160,5 +160,13 @@ namespace OrbisGL.GL
 
         public Vector2 Position { get => new Vector2(X, Y); set { X = value.X; Y = value.Y; } }
         public Vector2 Size { get => new Vector2(Width, Height); set { Width = value.X; Height = value.Y; } }
+
+        public Vector2 Center
+        {
+            get
+            {
+                return Position + (Size / 2);
+            }
+        }
     }
 }

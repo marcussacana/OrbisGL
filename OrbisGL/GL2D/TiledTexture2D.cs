@@ -102,7 +102,7 @@ namespace OrbisGL.GL2D
             if (TextureTile00 == null)
                 return;
 
-            var MaxSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
+            var MaxSize = new Vector2(ZoomMaxWidth, ZoomMaxHeight);
 
             bool DoubleWidth = TextureTile10 != null;
             bool DoubleHeight = TextureTile01 != null;
