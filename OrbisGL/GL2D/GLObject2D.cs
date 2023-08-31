@@ -47,6 +47,7 @@ namespace OrbisGL.GL2D
             set
             {
                 Offset = new Vector2(XOffset * value.X, YOffset * value.Y);
+                _Position = Offset / PixelOffset;
             }
         }
 
