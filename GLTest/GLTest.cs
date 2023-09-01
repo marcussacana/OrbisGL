@@ -21,7 +21,7 @@ using System.Drawing;
 using BCnEncoder.Encoder;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Diagnostics;
-using Orbis.BG;
+using Orbis.Scene;
 
 namespace GLTest
 {
@@ -884,7 +884,7 @@ void main(void) {
         }
 
 #if !ORBIS
-        StartMenu SM;
+        StartMenuScene SM;
 #endif
 
         private void button23_Click(object sender, EventArgs e)
@@ -899,7 +899,7 @@ void main(void) {
 
             panel1.Visible = false;
 
-            SM = new StartMenu();
+            SM = new StartMenuScene();
 
             SM.Load(i =>
             {

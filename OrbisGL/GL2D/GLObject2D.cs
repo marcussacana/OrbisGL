@@ -251,6 +251,8 @@ namespace OrbisGL.GL2D
             var VirtualSize = new Vector2(Coordinates2D.Width * Zoom, Coordinates2D.Height * Zoom);
             PixelOffset = MeasurePixelOffset(VirtualSize);
 
+            Position = Position;
+
             foreach (var Child in Childs)
                 Child.SetChildrenZoom(Zoom);
         }
