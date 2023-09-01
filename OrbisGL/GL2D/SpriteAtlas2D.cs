@@ -15,19 +15,19 @@ namespace OrbisGL.GL2D
     public class SpriteAtlas2D : GLObject2D
     {
 
-        Sprite2D SpriteView = new Sprite2D(new Texture2D());
+        protected Sprite2D SpriteView { get; set; }
 
         private Vector2[] FrameOffsets;
 
         /// <summary>
         /// Get a list of all sprites available
         /// </summary>
-        public SpriteInfo[] Sprites { get; private set; } = null;
+        public SpriteInfo[] Sprites { get; protected set; } = null;
 
         /// <summary>
         /// Get the Active sprite group name
         /// </summary>
-        public string CurrentSprite { get; private set; }
+        public string CurrentSprite { get; protected set; }
 
         /// <summary>
         /// Get or Set the loaded sprite sheet texture instance
@@ -37,10 +37,13 @@ namespace OrbisGL.GL2D
             get => ((Texture2D)SpriteView.Target).Texture;
             set
             {
-                ((Texture2D)SpriteView.Target).Texture = value;
+                if (SpriteView.Target is Texture2D Tex)
+                {
+                    Tex.Texture = value;
 
-                if (value != null)
-                    ((Texture2D)SpriteView.Target).RefreshVertex();
+                    if (value != null)
+                        ((Texture2D)SpriteView.Target).RefreshVertex();
+                }
             }
         }
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
@@ -50,8 +53,11 @@ namespace OrbisGL.GL2D
 
         public event EventHandler OnAnimationEnd;
 
-        public SpriteAtlas2D()
+        public SpriteAtlas2D() : this(new Sprite2D(new Texture2D())) { }
+
+        protected SpriteAtlas2D(Sprite2D View)
         {
+            SpriteView = View;
             AddChild(SpriteView);
             SpriteView.OnAnimationEnd += (sender, e) => OnAnimationEnd?.Invoke(this, e);
         }
@@ -119,7 +125,7 @@ namespace OrbisGL.GL2D
         /// <param name="LoadFile">A function to load the texture data from the given filename</param>
         /// <param name="EnableFiltering">Enables texture Linear filtering</param>
         /// <exception cref="FileNotFoundException">LoadFile hasn't able to load the file</exception>
-        public void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering)
+        public virtual void LoadSprite(XmlDocument Document, Func<string, Stream> LoadFile, bool EnableFiltering)
         {
             var TexturePath = Document.DocumentElement.GetAttribute("imagePath");
 
@@ -181,7 +187,7 @@ namespace OrbisGL.GL2D
         /// </summary>
         /// <param name="Document">An Adobe Animate texture atlas info</param>
         /// <param name="SpriteSheet">An texture compatible with the given texture atlas info</param>
-        public void LoadSprite(XmlDocument Document, Texture SpriteSheet)
+        public virtual void LoadSprite(XmlDocument Document, Texture SpriteSheet)
         {
             var SpriteTex = (Texture2D)SpriteView.Target;
 
@@ -211,7 +217,7 @@ namespace OrbisGL.GL2D
             this.Sprites = Sprites.ToArray();
         }
 
-        private static void LoadAsFrames(XmlNodeList Frames, List<SpriteInfo> Sprites)
+        protected static void LoadAsFrames(XmlNodeList Frames, List<SpriteInfo> Sprites)
         {
             List<SpriteFrame> SpriteFrames = new List<SpriteFrame>();
             foreach (var Frame in Frames.Cast<XmlNode>())
@@ -229,7 +235,7 @@ namespace OrbisGL.GL2D
             }
         }
 
-        private void LoadAsGroup(XmlNodeList Frames, List<SpriteInfo> Sprites)
+        protected void LoadAsGroup(XmlNodeList Frames, List<SpriteInfo> Sprites)
         {
             foreach (var Anim in Frames.Cast<XmlNode>().GroupBy(GetGroupName))
             {
@@ -252,7 +258,7 @@ namespace OrbisGL.GL2D
             }
         }
 
-        private static SpriteFrame LoadFrameInfo(XmlNode Frame)
+        protected static SpriteFrame LoadFrameInfo(XmlNode Frame)
         {
             var Name = Frame.Attributes["name"];
             var X = Frame.Attributes["x"];
@@ -294,7 +300,7 @@ namespace OrbisGL.GL2D
         /// Clone this sprite sharing the same texture memory
         /// </summary>
         /// <param name="AllowDisposal">When false, the clone instance can't dispose the shared texture</param>
-        public SpriteAtlas2D Clone(bool AllowDisposal)
+        public virtual GLObject2D Clone(bool AllowDisposal)
         {
             return new SpriteAtlas2D()
             {
@@ -307,17 +313,17 @@ namespace OrbisGL.GL2D
             };
         }
 
-        private bool IsNumberSufix(XmlNode x)
+        protected bool IsNumberSufix(XmlNode x)
         {
             return GetNumberSufixString(x) != null;
         }
 
-        private int GetNumberSufix(XmlNode x)
+        protected int GetNumberSufix(XmlNode x)
         {
             return int.Parse(GetNumberSufixString(x));
         }
 
-        private string GetNumberSufixString(XmlNode x)
+        protected string GetNumberSufixString(XmlNode x)
         {
             var Name = x.Attributes["name"].Value.Trim();
 
