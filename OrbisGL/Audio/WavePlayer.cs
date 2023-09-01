@@ -158,6 +158,7 @@ namespace OrbisGL.Audio
         {
             Paused = true;
         }
+        
 
         public void Resume()
         {
@@ -180,12 +181,19 @@ namespace OrbisGL.Audio
                 Kernel.sceKernelUsleep(1000);
             }
             
+            Driver.Resume();
             Paused = false;
+        }
+
+        public void Restart()
+        {
+            SkipTo(TimeSpan.Zero);
+            Resume();
         }
 
         private void Player()
         {
-            using (var Buffer = new RingBuffer(BlockSize*2))
+            using (var Buffer = new RingBuffer(BlockSize*3))
             {
                 Stream.BaseStream.Position = DataOffset;
                 var EndPos = DataOffset + DataSize;
@@ -205,7 +213,7 @@ namespace OrbisGL.Audio
 
                 try
                 {
-                    while (Stream.BaseStream.Position < EndPos && !Stopped)
+                    while (Stream.BaseStream.Position < EndPos && !Stopped && Driver.IsRunnning)
                     {
                         int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
                         Buffer.Write(DataBuffer, 0, Readed);
@@ -218,7 +226,7 @@ namespace OrbisGL.Audio
                             CurrentTime = TimeSpan.Zero;
                         }
 
-                        while (Paused && !Stopped)
+                        while ((Paused || Buffer.Length >= BlockSize * 2) && !Stopped && Driver.IsRunnning)
                             Thread.Sleep(100);
                     }
 
@@ -230,6 +238,7 @@ namespace OrbisGL.Audio
                     //Wait the Audio Output Driver read the reaming buffered data
                     while (Buffer.Length > 0 && Driver.IsRunnning)
                     {
+                        Driver.Flush();
                         Thread.Sleep(100);
                     }
                     

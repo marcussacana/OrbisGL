@@ -14,6 +14,8 @@ namespace OrbisGL.Audio
         void Play(RingBuffer PCMBuffer);
         void Stop();
 
+        void Flush();
+
         void Suspend();
         void Resume();
     }

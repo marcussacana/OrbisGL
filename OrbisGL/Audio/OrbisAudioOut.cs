@@ -13,10 +13,8 @@ namespace OrbisGL.Audio
         {
             //Made to early JIT the methods for faster initialization
             //when the user ask to play some audio
-            new OrbisAudioOut().Player();
+            new OrbisAudioOut().Player(null);
         }
-        
-        RingBuffer Buffer;
 
         private int handle;
 
@@ -24,6 +22,8 @@ namespace OrbisGL.Audio
         bool StopPlayer = false;
 
         bool FloatSample = false;
+
+        bool FlushBuffer;
 
         int Channels;
         uint Grain;
@@ -35,7 +35,7 @@ namespace OrbisGL.Audio
 
         public static bool Ready { get; private set; }
 
-        public bool IsRunnning => SoundThread.IsAlive;
+        public bool IsRunnning => SoundThread?.IsAlive ?? false;
 
         public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false)
         {
@@ -72,22 +72,22 @@ namespace OrbisGL.Audio
 
             if (Sampling == 0 || Grain == 0)
                 throw new Exception("Audio Output Proprieties not set.");
-            
-            Buffer = PCMBuffer;
 
             Ready = true;
             SoundThread = new Thread(Player);
             SoundThread.Name = "AudioOut";
-            SoundThread.Start();
+            SoundThread.Start(PCMBuffer);
         }
 
-        private unsafe void Player()
+        private unsafe void Player(object BufferObj)
         {
             if (!Ready)
             {
                 Ready = true;
                 return;
             }
+
+            RingBuffer Buffer = (RingBuffer)BufferObj;
 
             uint Param;
 
@@ -131,8 +131,11 @@ namespace OrbisGL.Audio
                             Kernel.sceKernelUsleep(100);
                         }
 
-                        if (Buffer.Length >= BlockSize)
+                        if (Buffer.Length >= BlockSize || FlushBuffer)
                         {
+                            if (Buffer.Length < BlockSize)
+                                FlushBuffer = false;
+                            
                             int Readed = 0;
 
                             if (FloatSample)
@@ -201,6 +204,11 @@ namespace OrbisGL.Audio
             }
 
             sceAudioOutSetVolume(handle, ORBIS_AUDIO_VOLUME_FLAG_ALL, Volume);
+        }
+
+        public void Flush()
+        {
+            FlushBuffer = true;
         }
 
         public void Suspend()

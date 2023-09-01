@@ -11,7 +11,7 @@ namespace OrbisGL
         {
             //Early JIT the class for lower delay in the first usage
             new Thread(() => {
-                using (var tmp = new RingBuffer(10))
+                using (var tmp = new RingBuffer(100))
                     tmp.Write(new byte[10], 0, 10);
             }).Start();
         }
@@ -112,8 +112,10 @@ namespace OrbisGL
             }
 
             while (BufferedAmount + count >= Size)
+            {
                 Thread.Sleep(100);
-            
+            }
+
             int bytesToWrite = Math.Min(count, Size - WriteOffset);
 
             buffer.Slice(inOffset, bytesToWrite).CopyTo(DataBuffer.AsSpan(WriteOffset));

@@ -41,6 +41,11 @@ namespace OrbisGL.Audio
         void Resume();
 
         /// <summary>
+        /// Play the current audio from the begin
+        /// </summary>
+        void Restart();
+
+        /// <summary>
         /// Changes the current player time
         /// </summary>
         /// <param name="Duration"></param>

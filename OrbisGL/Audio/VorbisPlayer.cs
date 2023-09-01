@@ -46,7 +46,7 @@ namespace OrbisGL.Audio
             
             try
             {
-                using (RingBuffer OutBuffer = new RingBuffer(SamplesBuffer.Length * 2))
+                using (RingBuffer OutBuffer = new RingBuffer(SamplesBuffer.Length * 3))
                 {
                     Driver.Play(OutBuffer);
                     
@@ -54,10 +54,10 @@ namespace OrbisGL.Audio
                     {
                         Span<float> SamplesSpan = new Span<float>(pSamples, SamplesPerSecond);
                         
-                        while (!Stopped)
+                        while (!Stopped && Driver.IsRunnning)
                         {
-                            while (Paused)
-                                Thread.Sleep(50);
+                            while ((Paused || OutBuffer.Length >= SamplesBuffer.Length * 2) && Driver.IsRunnning)
+                                Thread.Sleep(100);
 
                             int Readed = Reader.ReadSamples(SamplesSpan);
 
@@ -78,6 +78,7 @@ namespace OrbisGL.Audio
                     
                     while (OutBuffer.Length > 0 && Driver.IsRunnning)
                     {
+                        Driver.Flush();
                         Thread.Sleep(100);
                     }
                 }
@@ -110,7 +111,14 @@ namespace OrbisGL.Audio
                 DecoderThread.Start();
             }
 
+            Driver.Resume();
             Paused = false;
+        }
+
+        public void Restart()
+        {
+            SkipTo(TimeSpan.Zero);
+            Resume();
         }
 
         public void SetAudioDriver(IAudioOut Driver)
