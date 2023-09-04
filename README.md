@@ -167,6 +167,6 @@ flowchart TD
 
 - **PS4-OpenOrbis-Mono**: [LightningMods](https://github.com/LightningMods), [Al-Azif](https://github.com/Al-Azif), [bucanero](https://github.com/bucanero/bucanero), [flatz](https://github.com/flatz), [sleirsgoevy](https://github.com/sleirsgoevy), [OSM-Made](https://github.com/OSM-Made), [OpenOrbis Team](https://github.com/orgs/OpenOrbis/people).
 - **OrbisGL**: [marcussacana](https://github.com/marcussacana)
-	- **Shaders**: [ShadyBen](https://www.shadertoy.com/user/ShadyBen), [iq](https://www.shadertoy.com/user/iq), [gigaherz](https://www.shadertoy.com/user/gigaherz), [marcussacana](https://github.com/marcussacana)
+	- **Shaders**: [ShadyBen](https://www.shadertoy.com/user/ShadyBen), [iq](https://www.shadertoy.com/user/iq), [gigaherz](https://www.shadertoy.com/user/gigaherz), [Cherno](https://www.shadertoy.com/view/ssdSD2), [marcussacana](https://github.com/marcussacana)
 	- **SharpGLES**: [bitlush](https://github.com/bitlush)
 	- **ImageSharp**: [James Jackson-South](https://github.com/jimbobsquarepants), [Dirk Lemstra](https://github.com/dlemstra), [Anton Firsov](https://github.com/antonfirsov), [Scott Williams](https://github.com/tocsoft), [Brian Popow](https://github.com/brianpopow), and the open source contributors.
