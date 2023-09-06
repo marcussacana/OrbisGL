@@ -34,7 +34,15 @@ namespace OrbisGL.GL2D
         /// </summary>
         public Texture Texture
         {
-            get => ((Texture2D)SpriteView.Target).Texture;
+            get
+            {
+                if (SpriteView.Target is Texture2D Tex)
+                {
+                    return Tex.Texture;
+                }
+
+                return null;
+            }
             set
             {
                 if (SpriteView.Target is Texture2D Tex)
@@ -42,14 +50,14 @@ namespace OrbisGL.GL2D
                     Tex.Texture = value;
 
                     if (value != null)
-                        ((Texture2D)SpriteView.Target).RefreshVertex();
+                        Tex.RefreshVertex();
                 }
             }
         }
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
-        private bool AllowTexDisposal = false;
+        private bool AllowTexDisposal = true;
 
         public event EventHandler OnAnimationEnd;
 
@@ -375,6 +383,8 @@ namespace OrbisGL.GL2D
             {
                 Texture = null;
             }
+            Texture?.Dispose();
+            SpriteView.Dispose();
             base.Dispose();
         }
     }

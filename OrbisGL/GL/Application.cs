@@ -114,7 +114,7 @@ namespace OrbisGL.GL
 
             
 #if ORBIS
-            GLDisplay = new EGLDisplay(IntPtr.Zero, Width, Height, Config.Video, Config.System, Config.Flexible);
+            GLDisplay = new EGLDisplay(IntPtr.Zero, Width, Height, Config.System, Config.VideoShared, Config.Flexible, Config.VideoPrivate);
             
             Kernel.LoadStartModule("libSceMbus.sprx");//For Mouse and Dualshock Support
 #endif

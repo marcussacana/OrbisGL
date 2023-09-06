@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SharpGLES;
 
 namespace OrbisGL
 {
@@ -26,22 +27,17 @@ namespace OrbisGL
 
     public struct GPUMemoryConfig
     {
-        public ulong Video;
+        public ulong VideoShared;
         public ulong System;
         public ulong Flexible;
+        public ulong VideoPrivate;
 
         public static GPUMemoryConfig Default = new GPUMemoryConfig()
         {
-            Video = 512 * Constants.MB,
+            VideoShared = 512 * Constants.MB,
+            VideoPrivate = 0,
             System = 250 * Constants.MB,
             Flexible = 170 * Constants.MB
-        };
-
-        public static GPUMemoryConfig HighMemory = new GPUMemoryConfig()
-        {
-            Video = 512 * Constants.MB,
-            System = 250 * Constants.MB,
-            Flexible = uint.MaxValue
         };
     }
 

@@ -14,6 +14,8 @@ namespace OrbisGL.GL
 {
     public class Texture : IDisposable
     {
+        private int CurrentTextureSize;
+        
         private static List<int> SlotQueue = new List<int>(32);
 
         private static List<int> SlotTexture = new List<int>(32);
@@ -30,7 +32,17 @@ namespace OrbisGL.GL
                 SlotTexture.Add(0);
         }
 
-        internal int TextureID;
+        private int _TextureID;
+        internal int TextureID {
+            get
+            {
+                if (_TextureID == -1)
+                    throw new ObjectDisposedException(nameof(Texture));
+                
+                return _TextureID;
+            }
+        }
+        
         private int TextureType;
 
         public Texture(bool Is2DTexture)
@@ -39,7 +51,12 @@ namespace OrbisGL.GL
 
             int[] Textures = new int[1];
             GLES20.GenTextures(1, Textures);
-            TextureID = Textures.First();
+            _TextureID = Textures.First();
+        }
+
+        ~Texture()
+        {
+            Dispose();
         }
 
         private void Bind(int Slot)
@@ -66,9 +83,21 @@ namespace OrbisGL.GL
             this.Width = Width;
             this.Height = Height;
 
+            GC.RemoveMemoryPressure(CurrentTextureSize);
+
+            GLES20.GetError(); //Clear any old error
+
             fixed (byte* pData = Data)
             {
                 GLES20.TexImage2D(TextureType, 0, (int)Format, Width, Height, 0, (int)Format, GLES20.GL_UNSIGNED_BYTE, new IntPtr(pData));
+                
+                int Error = GLES20.GetError();
+
+                if (Error != GLES20.GL_NO_ERROR)
+                    throw new Exception($"GL ERROR 0x{Error:X8}");
+                
+                CurrentTextureSize = Data.Length;
+                GC.AddMemoryPressure(CurrentTextureSize);
                 
                 if (EnableFiltering)
                 {
@@ -117,6 +146,9 @@ namespace OrbisGL.GL
 
                 if (Error != GLES20.GL_NO_ERROR)
                     throw new Exception($"GL ERROR 0x{Error:X8}");
+                
+                CurrentTextureSize = TexSize;
+                GC.AddMemoryPressure(CurrentTextureSize);
 
                 if (EnableFiltering)
                 {
@@ -370,12 +402,21 @@ namespace OrbisGL.GL
             return ActiveSlot;
         }
         
-        //TODO: Compressed Texture Support
-        
         public void Dispose()
         {
+            if (CurrentTextureSize > 0)
+            {
+                GC.RemoveMemoryPressure(CurrentTextureSize);
+                CurrentTextureSize = 0;
+            }
+
+            if (_TextureID == -1)
+                return;
+            
             int[] Textures = new int[] { TextureID };
             GLES20.DeleteTextures(Textures.Length, Textures);
+
+            _TextureID = -1;
         }
     }
 }

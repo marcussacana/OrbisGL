@@ -207,5 +207,11 @@ namespace OrbisGL.GL2D
 
             base.Draw(Tick);
         }
+
+        public override void Dispose()
+        {
+            Target?.Dispose();
+            base.Dispose();
+        }
     }
 }

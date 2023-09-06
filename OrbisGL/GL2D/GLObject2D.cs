@@ -283,9 +283,12 @@ namespace OrbisGL.GL2D
 
         public virtual void RemoveChild(GLObject2D Child)
         {
+            
             Children.Remove(Child);
             Child.Parent = null;
-            Child.RefreshVertex();
+
+            if (!Child.Disposed)
+                Child.RefreshVertex();
         }
 
         public virtual void RemoveChildren(bool Dispose)
@@ -305,15 +308,15 @@ namespace OrbisGL.GL2D
 
         public override void Dispose()
         {
-            if (Parent != null)
-                Parent.RemoveChild(this);
-
             foreach (var Child in Children.ToArray())
             {
                 Child.Dispose();
             }
-
+            
             base.Dispose();
+            
+            if (Parent != null)
+                Parent.RemoveChild(this);
         }
     }
 }

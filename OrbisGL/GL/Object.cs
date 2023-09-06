@@ -23,6 +23,9 @@ namespace OrbisGL.GL
         private List<byte> ArrayBuffer = new List<byte>();
         private List<byte> IndexBuffer = new List<byte>();
 
+        private int LastArrayBufferSize;
+        private int LastIndexBufferSize;
+
         private IntPtr pArrayBuffer = IntPtr.Zero;
         private IntPtr pIndexBuffer = IntPtr.Zero;
 
@@ -33,10 +36,15 @@ namespace OrbisGL.GL
 
         private bool ValidBuffer = false;
 
-        private bool Disposed = false;
+        public bool Disposed { get; private set; } = false;
 
         protected GLObject() {
             this.RenderMode = (int)OrbisGL.RenderMode.Triangle;
+        }
+
+        ~GLObject()
+        {
+            Dispose();
         }
 
         int TimeUniformLocation = int.MinValue;
@@ -146,6 +154,8 @@ namespace OrbisGL.GL
                 GLES20.BindBuffer(GLES20.GL_ARRAY_BUFFER, GLArrayBuffer);
                 GLES20.BufferData(GLES20.GL_ARRAY_BUFFER, ArrayBuffer.Count, pArrayBuffer, GLES20.GL_STATIC_DRAW);
 
+                GC.AddMemoryPressure(LastArrayBufferSize = ArrayBuffer.Count);
+                
                 ValidBuffer = true;
             }
             
@@ -168,6 +178,8 @@ namespace OrbisGL.GL
                 
                 GLES20.BindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, GLIndexBuffer);
                 GLES20.BufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, IndexBuffer.Count, pIndexBuffer, GLES20.GL_STATIC_DRAW);
+                
+                GC.AddMemoryPressure(LastIndexBufferSize = IndexBuffer.Count);
             }
             
         }
@@ -196,12 +208,24 @@ namespace OrbisGL.GL
             {
                 Marshal.FreeHGlobal(pIndexBuffer);
                 pIndexBuffer = IntPtr.Zero;
+
+                if (LastIndexBufferSize > 0)
+                {
+                    GC.RemoveMemoryPressure(LastIndexBufferSize);
+                    LastIndexBufferSize = 0;
+                }
             }
 
             if (pArrayBuffer != IntPtr.Zero)
             {
                 Marshal.FreeHGlobal(pArrayBuffer);
                 pArrayBuffer = IntPtr.Zero;
+
+                if (LastArrayBufferSize > 0)
+                {
+                    GC.RemoveMemoryPressure(LastArrayBufferSize);
+                    LastArrayBufferSize = 0;
+                }
             }
         }
 
@@ -278,7 +302,10 @@ namespace OrbisGL.GL
             
             Program?.Dispose();
             Texture?.Dispose();
+            
             int Count = 0;
+            
+            FreeBuffer();
             
             int[] Buffers = new int[2];
             if (GLArrayBuffer != 0)
