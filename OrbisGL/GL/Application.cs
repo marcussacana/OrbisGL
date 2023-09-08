@@ -474,7 +474,7 @@ namespace OrbisGL.GL
             GLES20.Viewport(0, 0, GLDisplay.Width, GLDisplay.Height);
 #else
             if (GLDisplay == null)
-                GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.Video, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.Flexible);
+                GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.VideoShared, GPUMemoryConfig.Default.Flexible, GPUMemoryConfig.Default.VideoPrivate);
 #endif
         }
 
@@ -555,7 +555,7 @@ namespace OrbisGL.GL
             }
 
             GLDisplay.Dispose();
-            GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.Video, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.Flexible);
+            GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.VideoShared, GPUMemoryConfig.Default.Flexible, GPUMemoryConfig.Default.VideoPrivate);
 
             GLES20.Viewport(0, 0, Width, Height);
         }

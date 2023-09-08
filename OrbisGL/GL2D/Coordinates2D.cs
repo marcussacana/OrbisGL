@@ -123,10 +123,10 @@ namespace OrbisGL.GL2D
         public static Vector2 GetMiddle(this GLObject2D Obj, GLObject2D Child) => GetMiddle(new Vector2(Obj.Width, Obj.Height), new Vector2(Child.Width, Child.Height));
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 GetMiddle(this Vector2 Size, Vector2 Child)
+        public static Vector2 GetMiddle(this Vector2 Size, Vector2 ChildSize)
         {
-            float CenterX = Child.X / 2;
-            float CenterY = Child.Y / 2;
+            float CenterX = ChildSize.X / 2;
+            float CenterY = ChildSize.Y / 2;
 
             float ThisCenterX = Size.X / 2;
             float ThisCenterY = Size.Y / 2;
