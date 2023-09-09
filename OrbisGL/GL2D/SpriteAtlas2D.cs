@@ -29,6 +29,13 @@ namespace OrbisGL.GL2D
         /// </summary>
         public string CurrentSprite { get; protected set; }
 
+
+        /// <summary>
+        /// Sets an delay in miliseconds for advance the sprite in the next frame
+        /// automatically, where 0 means disabled
+        /// </summary>
+        public int FrameDelay { get => SpriteView.FrameDelay; set => SpriteView.FrameDelay = value; }
+
         /// <summary>
         /// Get or Set the loaded sprite sheet texture instance
         /// </summary>

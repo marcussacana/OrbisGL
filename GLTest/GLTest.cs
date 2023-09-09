@@ -212,13 +212,24 @@ void main(void) {
                 var OutImg = Path.Combine(Path.GetDirectoryName(ImgFile), Path.GetFileNameWithoutExtension(ImgFile) + ".dds");
                 using (var Img = new Bitmap(ImgFile))
                 {
-                    var MustResize = (Img.Width % 4) != 0 || (Img.Height % 4) != 0;
+                    var MustResizeX = (Img.Width % 4) != 0;
+                    var MustResizeY = (Img.Height % 4) != 0;
 
                     Bitmap Output = Img;
 
-                    if (MustResize)
+                    if (MustResizeX || MustResizeY)
                     {
-                        Output = new Bitmap(Img.Width + (4 - (Img.Width % 4)), Img.Height + (4 - (Img.Height % 4)));
+                        int NewWidth = Img.Width;
+                        int NewHeight = Img.Height;
+
+                        if (MustResizeX)
+                            NewWidth += 4 - (Img.Width % 4);
+
+                        if (MustResizeY)
+                            NewHeight += 4 - (Img.Height % 4);
+
+                        Output = new Bitmap(NewWidth, NewHeight);
+
                         using (Graphics g = Graphics.FromImage(Output))
                         {
                             g.DrawImage(Img, 0, 0, Img.Width, Img.Height);
@@ -280,6 +291,8 @@ void main(void) {
                     System.Windows.Forms.Application.DoEvents();
                 }
             }
+
+            MessageBox.Show("Finished!");
         }
         public Bitmap Trim(Bitmap bmp)
         {
@@ -417,6 +430,11 @@ void main(void) {
                         if (Files.Contains(Path.ChangeExtension(File, ".dds")))
                             continue;
                     }
+
+                    var SplitFile = Path.Combine(Path.GetDirectoryName(File), Path.GetFileNameWithoutExtension(File) + "{0}" + Path.GetExtension(File));
+
+                    if (Files.Contains(string.Format(SplitFile, "_tUL")))
+                        continue;
 
                     if (SndExts.Contains(Path.GetExtension(File).ToLowerInvariant()))
                     {

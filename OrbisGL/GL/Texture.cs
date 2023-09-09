@@ -83,7 +83,8 @@ namespace OrbisGL.GL
             this.Width = Width;
             this.Height = Height;
 
-            GC.RemoveMemoryPressure(CurrentTextureSize);
+            if (CurrentTextureSize > 0)
+                GC.RemoveMemoryPressure(CurrentTextureSize);
 
             GLES20.GetError(); //Clear any old error
 
