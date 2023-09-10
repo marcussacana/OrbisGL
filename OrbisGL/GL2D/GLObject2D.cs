@@ -236,7 +236,8 @@ namespace OrbisGL.GL2D
         }
 
         /// <summary>
-        /// Scale object coordinates, where 1.0 = 100%, and 0.5 = 200%
+        /// Scale object coordinates, where 1.0 is 100% and 0.5 is 200%;
+        /// The method <see cref="ParseZoomFactor(float)"/> can be used to get the multiplier value as well
         /// </summary>
         public void SetZoom(float Value = 1f)
         {

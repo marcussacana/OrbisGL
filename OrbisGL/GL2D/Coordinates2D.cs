@@ -160,5 +160,16 @@ namespace OrbisGL.GL2D
 
             return new Vector2(X, Y);
         }
+
+        /// <summary>
+        /// Parses a zoom factor to calculate the resolution multiplier. 
+        /// To convert back to the original value, use the same method with 
+        /// the obtained multiplier as the input.
+        /// </summary>
+        /// <param name="Factor">The zoom factor, where 100 represents 1x scale.</param>
+        /// <returns>The resolution multiplier based on the given zoom factor. 
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ParseZoomFactor(float Factor) => 100 / Factor;
     }
 }
