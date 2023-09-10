@@ -62,6 +62,10 @@ namespace OrbisGL.GL2D
                 }
             }
         }
+        /// <summary>
+        /// Enable or Disable the horizontal mirror effect
+        /// </summary>
+        public virtual bool Mirror { get => ((Texture2D)SpriteView.Target).Mirror; set => ((Texture2D)SpriteView.Target).Mirror = value; }
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
@@ -131,6 +135,8 @@ namespace OrbisGL.GL2D
 
             var Frames = Animation.SelectMany(x => x.Frames);
 
+            Frames = ApplyMirrorEffect(Frames);
+
             var FrameCoords = Frames.Select(x => x.Coordinates);
             var FrameOffsets = Frames.Select(x => new Vector2(x.X, x.Y));
 
@@ -143,15 +149,42 @@ namespace OrbisGL.GL2D
             SpriteView.Frames = FrameCoords.ToArray();
             var FirstFrame = Frames.First();
 
-            Width = SpriteView.Width = (int)FirstFrame.Coordinates.Width;
-            Height = SpriteView.Height = (int)FirstFrame.Coordinates.Height;
+            Width = SpriteView.Width = (int)FirstFrame.FrameSize.X;
+            Height = SpriteView.Height = (int)FirstFrame.FrameSize.Y;
 
             this.FrameOffsets = FrameOffsets.ToArray();
 
             SpriteView.SetCurrentFrame(0);
             return true;
         }
-        
+
+        private IEnumerable<SpriteFrame> ApplyMirrorEffect(IEnumerable<SpriteFrame> Frames)
+        {
+            if (!Mirror) 
+            {
+                foreach (var Frame in Frames)
+                    yield return Frame;
+                yield break;
+            }
+
+            int MaxWidth = SpriteView.Target.Width;
+
+            float MaxFrameWidth = Frames.Max(x => x.FrameSize.X);
+
+            foreach (var x in Frames)
+            {
+                int DeltaWidth = (int)(MaxFrameWidth - x.Coordinates.Width);
+
+                yield return new SpriteFrame()
+                {
+                    Coordinates = new Rectangle(MaxWidth - x.Coordinates.Right, x.Coordinates.Y, x.Coordinates.Width, x.Coordinates.Height),
+                    FrameSize = x.FrameSize,
+                    X = -x.X - DeltaWidth,
+                    Y = x.Y
+                };
+            }
+        }
+
         /// <summary>
         /// Creates an new animation by selecting the frames from other animation
         /// </summary>
@@ -339,6 +372,9 @@ namespace OrbisGL.GL2D
             var FrameX = Frame.Attributes["frameX"];
             var FrameY = Frame.Attributes["frameY"];
 
+            var FrameWidth = Frame.Attributes["frameWidth"] ?? Width;
+            var FrameHeight = Frame.Attributes["frameHeight"] ?? Height;
+
 
             bool OK = int.TryParse(X.Value, out int iX);
             OK &= int.TryParse(Y.Value, out int iY);
@@ -351,6 +387,7 @@ namespace OrbisGL.GL2D
 
             SpriteFrame FrameInfo = new SpriteFrame();
             FrameInfo.Coordinates = new Rectangle(iX, iY, iWidth, iHeight);
+            FrameInfo.FrameSize = new Vector2(int.Parse(FrameWidth.Value), int.Parse(FrameHeight.Value));
 
             int DeltaX = 0;
             if (FrameX != null)

@@ -33,6 +33,8 @@ namespace OrbisGL.GL2D
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
+        public override bool Mirror { get => ((TiledTexture2D)SpriteView.Target).Mirror; set => ((TiledTexture2D)SpriteView.Target).Mirror = value; }
+
         private bool AllowTexDisposal = false;
 
         public TiledSpriteAtlas2D() : base(new Sprite2D(new TiledTexture2D())) { }

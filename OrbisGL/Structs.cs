@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SharpGLES;
+using System.Numerics;
 
 namespace OrbisGL
 {
@@ -77,6 +78,12 @@ namespace OrbisGL
         /// Frame Coordinates in Target Texture
         /// </summary>
         public Rectangle Coordinates;
+
+        /// <summary>
+        /// The frame size
+        /// </summary>
+        public Vector2 FrameSize;
+
         /// <summary>
         /// Frame Delta X Offset
         /// </summary>
