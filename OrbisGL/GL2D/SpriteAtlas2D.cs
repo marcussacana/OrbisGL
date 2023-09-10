@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.Remoting;
 using System.Xml;
 
 namespace OrbisGL.GL2D
@@ -105,7 +106,16 @@ namespace OrbisGL.GL2D
         /// <param name="Name">The Animation Name</param>
         /// <exception cref="Exception"><see cref="LoadSprite"/> Not called</exception>
         /// <exception cref="KeyNotFoundException">No animations found with the given name</exception>
-        public bool SetActiveAnimation(string Name)
+        public bool SetActiveAnimation(string Name) => SetActiveAnimation(Name, 0);
+
+        /// <summary>
+        /// Select an sprite animation with the given name
+        /// </summary>
+        /// <param name="Name">The Animation Name</param>
+        /// <para name="Loops">Create a loop X times by duplicating the animation frames</para>
+        /// <exception cref="Exception"><see cref="LoadSprite"/> Not called</exception>
+        /// <exception cref="KeyNotFoundException">No animations found with the given name</exception>
+        public bool SetActiveAnimation(string Name, int Loops)
         {
             if (Sprites == null)
                 throw new Exception("Sprite Sheet not Loaded");
@@ -121,16 +131,60 @@ namespace OrbisGL.GL2D
 
             var Frames = Animation.SelectMany(x => x.Frames);
 
-            SpriteView.Frames = Frames.Select(x => x.Coordinates).ToArray();
+            var FrameCoords = Frames.Select(x => x.Coordinates);
+            var FrameOffsets = Frames.Select(x => new Vector2(x.X, x.Y));
+
+            for (int i = 0; i < Loops; i++)
+            {
+                FrameCoords = FrameCoords.Concat(Frames.Select(x => x.Coordinates));
+                FrameOffsets = FrameOffsets.Concat(Frames.Select(x => new Vector2(x.X, x.Y)));
+            }
+
+            SpriteView.Frames = FrameCoords.ToArray();
             var FirstFrame = Frames.First();
 
             Width = SpriteView.Width = (int)FirstFrame.Coordinates.Width;
             Height = SpriteView.Height = (int)FirstFrame.Coordinates.Height;
 
-            FrameOffsets = Frames.Select(x => new Vector2(x.X, x.Y)).ToArray();
+            this.FrameOffsets = FrameOffsets.ToArray();
 
             SpriteView.SetCurrentFrame(0);
             return true;
+        }
+        
+        /// <summary>
+        /// Creates an new animation by selecting the frames from other animation
+        /// </summary>
+        /// <param name="OriginAnimation">The original animation name to pick the frames</param>
+        /// <param name="NewAnimation">The new animation name</param>
+        /// <param name="DeleteOldAnimation">If true, the original animation will be deleted</param>
+        /// <param name="FrameIndex">The index of the frames in the OriginAnimation to be used in the new animation</param>
+        /// <exception cref="KeyNotFoundException">The given OriginAnimation name does not matches with any animation loaded</exception>
+        public void CreateAnimationByIndex(string OriginAnimation, string NewAnimation, bool DeleteOldAnimation, params int[] FrameIndex)
+        {
+            var OriSprite = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == OriginAnimation.ToLowerInvariant().Trim());
+            if (!OriSprite.Any())
+                throw new KeyNotFoundException(OriginAnimation);
+
+            var SrcFrames = OriSprite.SelectMany(x => x.Frames).ToArray();
+            
+            var DstFrames = new SpriteFrame[FrameIndex.Length];
+            
+            for (int i = 0; i < FrameIndex.Length; i++)
+            {
+                DstFrames[i] = SrcFrames[FrameIndex[i]];
+            }
+
+            SpriteInfo NewSprite = new SpriteInfo()
+            {
+                Frames = DstFrames,
+                Name = NewAnimation
+            };
+
+            if (DeleteOldAnimation)
+                Sprites = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() != OriginAnimation.ToLowerInvariant().Trim()).ToArray();
+
+            Sprites = Sprites.Concat(new SpriteInfo[] { NewSprite }).ToArray();
         }
 
         /// <summary>
