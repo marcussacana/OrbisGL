@@ -79,6 +79,7 @@ namespace OrbisGL.GL2D
         {
             SpriteView = View;
             AddChild(SpriteView);
+            SpriteView.OnFrameChange += (sender, e) => SpriteView.Position = -FrameOffsets[e];
             SpriteView.OnAnimationEnd += (sender, e) => OnAnimationEnd?.Invoke(this, e);
         }
 
@@ -126,6 +127,9 @@ namespace OrbisGL.GL2D
 
             if (Name == CurrentSprite)
                 return true;
+
+            if (Name == null)
+                return false;
 
             var Animation = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == Name.ToLowerInvariant().Trim());
             if (!Animation.Any())
@@ -453,14 +457,11 @@ namespace OrbisGL.GL2D
             
             if (CurrentSprite != AnimName)
                 return;
-
-            SpriteView.Position = -FrameOffsets[FrameID];
         }
 
         public void SetCurrentFrame(int FrameID)
         {
             SpriteView.SetCurrentFrame(FrameID);
-            SpriteView.Position = -FrameOffsets[FrameID];
         }
 
         private string GetGroupName(XmlNode x)

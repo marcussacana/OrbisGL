@@ -22,6 +22,7 @@ using BCnEncoder.Encoder;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Diagnostics;
 using Orbis.Scene;
+using System.Windows.Markup;
 
 namespace GLTest
 {
@@ -905,9 +906,12 @@ void main(void) {
         StartMenuScene SM;
 #endif
 
+        CharacterAnim Anim;
+        TiledSpriteAtlas2D Sprite;
         private void button23_Click(object sender, EventArgs e)
         {
 #if !ORBIS
+            
             FormBorderStyle = FormBorderStyle.None;
             Size = new Size(1920, 1080);
 
@@ -916,7 +920,7 @@ void main(void) {
             GLControl.SetSize(Size.Width, Size.Height);
 
             panel1.Visible = false;
-
+            
             SM = new StartMenuScene();
 
             SM.Load(i =>
@@ -924,6 +928,24 @@ void main(void) {
                 if (SM.Loaded)
                     GLControl.GLApplication.AddObject(SM);
             });
+            
+            /*
+            var XML = Util.GetXML(Character.GirlfriendAssets);
+
+            Sprite = new TiledSpriteAtlas2D(XML, Util.CopyFileToMemory, true);
+            Anim = new CharacterAnim("gf");
+
+            Switch = true;
+            Sprite.SetActiveAnimation(Anim.DANCING);
+
+            Offset = Anim.GetAnimOffset(Sprite.CurrentSprite);
+
+            Sprite.Position = new Vector2(100, 100);
+            Sprite.FrameDelay = 20;
+            Sprite.Position -= Offset;
+
+            GLControl.GLApplication.AddObject(Sprite);
+            */
 #endif
         }
     }

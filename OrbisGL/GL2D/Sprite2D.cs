@@ -19,6 +19,7 @@ namespace OrbisGL.GL2D
         public override byte Opacity { get => Target.Opacity; set => Target.Opacity = value; }
 
         public event EventHandler OnAnimationEnd;
+        public event EventHandler<int> OnFrameChange;
 
         int _FrameDelay;
 
@@ -175,6 +176,8 @@ namespace OrbisGL.GL2D
                 CurrentFrame = 0;
                 AnimationEnd = true;
             }
+
+            OnFrameChange?.Invoke(this, DrawFrame);
 
             if (AnimationEnd)
                 OnAnimationEnd?.Invoke(this, EventArgs.Empty);
