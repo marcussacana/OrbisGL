@@ -125,11 +125,11 @@ namespace OrbisGL.GL2D
             if (Sprites == null)
                 throw new Exception("Sprite Sheet not Loaded");
 
-            if (Name == CurrentSprite)
-                return true;
-
             if (Name == null)
                 return false;
+
+            if (Name == CurrentSprite)
+                return true;
 
             var Animation = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == Name.ToLowerInvariant().Trim());
             if (!Animation.Any())
