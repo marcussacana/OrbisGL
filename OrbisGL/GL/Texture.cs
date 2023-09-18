@@ -45,6 +45,8 @@ namespace OrbisGL.GL
         
         private int TextureType;
 
+        public bool Is2D => TextureType == GLES20.GL_TEXTURE_2D;
+
         public Texture(bool Is2DTexture)
         {
             TextureType = Is2DTexture ? GLES20.GL_TEXTURE_2D : GLES20.GL_TEXTURE;

@@ -1,5 +1,7 @@
 ﻿using OrbisGL.GL;
 using SharpGLES;
+using System;
+using System.IO;
 using System.Numerics;
 using static OrbisGL.GL2D.Coordinates2D;
 
@@ -35,6 +37,45 @@ namespace OrbisGL.GL2D
         /// </summary>
         public Texture Texture { get; set; }
 
+        /// <summary>
+        /// Creates a texture from raw pixel data
+        /// </summary>
+        /// <param name="Width">The texture width size in pixels</param>
+        /// <param name="Height">The texture height size in pixels</param>
+        /// <param name="PixelData">The pixel data</param>
+        /// <param name="Format">The pixel data format</param>
+        /// <param name="EnableFiltering">Enables/Disable texture magnification filtering</param>
+        public Texture2D(int Width, int Height, byte[] PixelData, PixelFormat Format, bool EnableFiltering) : this(new Texture(true))
+        {
+            Texture.SetData(Width, Height, PixelData, Format, EnableFiltering);
+        }
+
+        /// <summary>
+        /// Creates a texture from DDS file stream
+        /// </summary>
+        /// <param name="DDS">The DDS file stream</param>
+        /// <param name="EnableFiltering">Enables/Disable texture magnification filtering</param>
+        public Texture2D(Stream DDS, bool EnableFiltering) : this(new Texture(true))
+        {
+            Texture.SetDDS(DDS, EnableFiltering);
+        }
+
+        /// <summary>
+        /// Creates an texture render for the given texture
+        /// </summary>
+        /// <param name="Texture">The 2D Texture Instance</param>
+        public Texture2D(Texture Texture) : this()
+        {
+            if (!Texture.Is2D)
+                throw new Exception("The given texture isn't an GL2D texture");
+
+
+            this.Texture = Texture;
+        }
+
+        /// <summary>
+        /// Creates an 2D texture render object
+        /// </summary>
         public Texture2D()
         {
             var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentTexture"));
