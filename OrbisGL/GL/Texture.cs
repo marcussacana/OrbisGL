@@ -63,8 +63,17 @@ namespace OrbisGL.GL
 
         private void Bind(int Slot)
         {
+            GLES20.GetLastError();
+            
             GLES20.ActiveTexture(GLES20.GL_TEXTURE0 + Slot);
             GLES20.BindTexture(TextureType, TextureID);
+
+            int Error = GLES20.GetLastError();
+
+            if (Error != GLES20.GL_NO_ERROR)
+            {
+                throw new Exception("GL TEXBIND ERROR: 0x" + Error.ToString("X8"));
+            }
         }
 
 
@@ -120,8 +129,6 @@ namespace OrbisGL.GL
             if (Width * Height > Constants.ORBIS_MAX_TEXTURE_SIZE * Constants.ORBIS_MAX_TEXTURE_SIZE)
                 throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_SIZE}x{Constants.ORBIS_MAX_TEXTURE_SIZE}");
 
-            GLES20.GetError(); //Clear any old error
-
             Bind(Active());
             
             this.Width = Width;
@@ -140,12 +147,12 @@ namespace OrbisGL.GL
                         blockSize = 16;
                         break;
                 }
-
+                
                 int TexSize = ((Width + 3) / 4) * ((Height + 3) / 4) * blockSize;
 
                 GLES20.CompressedTexImage2D(TextureType, 0, (int)Format, Width, Height, 0, TexSize, new IntPtr(pData));
 
-                int Error = GLES20.GetError();
+                int Error = GLES20.GetLastError();
 
                 if (Error != GLES20.GL_NO_ERROR)
                     throw new Exception($"GL ERROR 0x{Error:X8}");

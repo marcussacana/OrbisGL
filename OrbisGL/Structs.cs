@@ -33,12 +33,26 @@ namespace OrbisGL
         public ulong Flexible;
         public ulong VideoPrivate;
 
+        /// <summary>
+        /// Optimize memory for applications
+        /// </summary>
         public static GPUMemoryConfig Default = new GPUMemoryConfig()
         {
             VideoShared = 512 * Constants.MB,
             VideoPrivate = 0,
             System = 250 * Constants.MB,
             Flexible = 170 * Constants.MB
+        };
+
+        /// <summary>
+        /// Optimize memory for games
+        /// </summary>
+        public static GPUMemoryConfig HighFlexible = new GPUMemoryConfig()
+        {
+            VideoShared = 270 * Constants.MB,
+            VideoPrivate = 0,
+            System = 100 * Constants.MB,
+            Flexible = 512 * Constants.MB
         };
     }
 

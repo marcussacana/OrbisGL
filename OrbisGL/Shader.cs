@@ -336,7 +336,7 @@ namespace OrbisGL
 #endif
         public static int GetProgram(string VertexSource, string FragmentSource)
         {
-            GLES20.GetError(); //Clear Any Old Error
+            GLES20.GetLastError(); //Clear Any Old Error
 
             int Vertex = GetShader(GLES20.GL_VERTEX_SHADER, VertexSource);
             int Fragment = GetShader(GLES20.GL_FRAGMENT_SHADER, FragmentSource);
@@ -346,7 +346,7 @@ namespace OrbisGL
 
         static int GetProgram(int hVertex, int hFragment)
         {
-            GLES20.GetError();
+            GLES20.GetLastError(); //Clear Any Old Error
 
             int Program = GLES20.CreateProgram();
 
@@ -369,7 +369,7 @@ namespace OrbisGL
                 throw new Exception("Failed to Initialize the GL Program: " + Info);
             }
 
-            int LastError = GLES20.GetError();
+            int LastError = GLES20.GetLastError();
             if (LastError != GLES20.GL_NO_ERROR)
             {
                 throw new Exception("OpenGL Error: 0x" + LastError.ToString("X8"));
