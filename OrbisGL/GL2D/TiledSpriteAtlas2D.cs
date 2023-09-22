@@ -35,7 +35,7 @@ namespace OrbisGL.GL2D
 
         public override bool Mirror { get => ((TiledTexture2D)SpriteView.Target).Mirror; set => ((TiledTexture2D)SpriteView.Target).Mirror = value; }
 
-        private bool AllowTexDisposal = false;
+        private bool AllowTexDisposal = true;
 
         public TiledSpriteAtlas2D() : base(new Sprite2D(new TiledTexture2D())) { }
 

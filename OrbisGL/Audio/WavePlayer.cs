@@ -213,7 +213,7 @@ namespace OrbisGL.Audio
 
                 try
                 {
-                    while (Stream.BaseStream.Position < EndPos && !Stopped && Driver.IsRunnning)
+                    while (Stream.BaseStream != null && Stream.BaseStream.Position < EndPos && !Stopped && Driver.IsRunnning)
                     {
                         int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
                         Buffer.Write(DataBuffer, 0, Readed);
