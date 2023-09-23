@@ -39,9 +39,13 @@ namespace OrbisGL
             DataBuffer = new byte[Size];
         }
 
+        ~RingBuffer()
+        {
+            DataBuffer = null;
+        }
+        
         public override void Flush()
         {
-
         }
 
         public override long Seek(long offset, SeekOrigin origin)

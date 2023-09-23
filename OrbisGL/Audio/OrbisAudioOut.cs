@@ -9,13 +9,6 @@ namespace OrbisGL.Audio
 {
     public class OrbisAudioOut : IAudioOut
     {
-        static OrbisAudioOut()
-        {
-            //Made to early JIT the methods for faster initialization
-            //when the user ask to play some audio
-            new OrbisAudioOut().Player(null);
-        }
-
         private int handle;
 
         bool PausePlayer = false;
@@ -32,10 +25,7 @@ namespace OrbisGL.Audio
         Thread SoundThread;
 
         private static bool Initialized;
-
-        public static bool Ready { get; private set; }
-
-        public bool IsRunnning => SoundThread?.IsAlive ?? false;
+        public bool IsRunnning { get; private set; }
 
         public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false)
         {
@@ -72,21 +62,16 @@ namespace OrbisGL.Audio
 
             if (Sampling == 0 || Grain == 0)
                 throw new Exception("Audio Output Proprieties not set.");
-
-            Ready = true;
+            
             SoundThread = new Thread(Player);
             SoundThread.Name = "AudioOut";
+            
+            IsRunnning = true;
             SoundThread.Start(PCMBuffer);
         }
 
         private unsafe void Player(object BufferObj)
         {
-            if (!Ready)
-            {
-                Ready = true;
-                return;
-            }
-
             RingBuffer Buffer = (RingBuffer)BufferObj;
 
             uint Param;
@@ -102,9 +87,12 @@ namespace OrbisGL.Audio
                 Grain, Sampling, Param);
 
             if (handle < 0)
+            {
+                IsRunnning = false;
                 throw new Exception("Failed to Initialize the Audio Driver Instance");
+            }
 
-            SetVolume(80);
+            SetVolume(LastVolume);
 
             int BlockSize = (int)(Grain * Channels * sizeof(short));
 
@@ -135,7 +123,7 @@ namespace OrbisGL.Audio
                         {
                             if (Buffer.Length < BlockSize)
                                 FlushBuffer = false;
-                            
+
                             int Readed = 0;
 
                             if (FloatSample)
@@ -182,7 +170,13 @@ namespace OrbisGL.Audio
                         }
                     }
                 }
-                catch (ThreadAbortException abort) { }
+                catch (ThreadAbortException abort)
+                {
+                }
+                finally
+                {
+                    IsRunnning = false;
+                }
             }
 
             sceAudioOutOutput(handle, null);
@@ -192,9 +186,12 @@ namespace OrbisGL.Audio
             handle = 0;
         }
 
+        private byte LastVolume = 80;
         public void SetVolume(byte Value)
         {
             Value = Math.Min(Value, (byte)100);
+
+            LastVolume = Value;
 
             int[] Volume = new int[(int)OrbisAudioOutChannel.MAX];
 
