@@ -190,6 +190,61 @@ namespace OrbisGL.GL2D
         }
 
         /// <summary>
+        /// Create an new animation with the given frame coordinates
+        /// </summary>
+        /// <param name="Animation">The Animation name</param>
+        /// <param name="FrameCoord">The frame rectangle in texture</param>
+        /// <param name="FrameOffset">The frame display offset (optional)</param>
+        /// <param name="FrameSize">The frame display size (optional)</param>
+        public void CreateAnimation(string Animation, Rectangle[] FrameCoord, Vector2[] FrameOffset = null, Vector2[] FrameSize = null)
+        {
+            if (FrameOffset != null && FrameCoord.Length != FrameOffset.Length && FrameOffset.Length != 0)
+                throw new Exception("The frame offset count must be the same of the frame coordinates count");
+
+            if (FrameSize != null && FrameCoord.Length != FrameSize.Length && FrameSize.Length != 0)
+                throw new Exception("The frame size count must be the same of the frame coordinates count");
+
+            if (FrameCoord == null || FrameCoord.Length == 0)
+                throw new Exception("At least one frame coordinate must be specified");
+
+            if (Sprites == null)
+                Sprites = new SpriteInfo[0];
+
+            //Remove old animation if have one
+            Sprites = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() != Animation.ToLowerInvariant().Trim()).ToArray();
+
+
+            if (FrameOffset == null || FrameOffset.Length == 0)
+                FrameOffset = FrameCoord.Select(x => Vector2.Zero).ToArray();
+
+            if (FrameSize?.Length == 0)
+                FrameSize = null;
+
+            SpriteInfo NewSprite = new SpriteInfo();
+            NewSprite.Name = Animation;
+
+            List<SpriteFrame> Frames = new List<SpriteFrame>();
+            for (int i = 0; i < FrameCoord.Length; i++)
+            {
+                var Frame = new SpriteFrame();
+                Frame.Coordinates = FrameCoord[i];
+                Frame.X = (int)FrameOffset[i].X;
+                Frame.Y = (int)FrameOffset[i].Y;
+                Frame.FrameSize = FrameSize?[i] ?? FrameCoord[i].Size;
+
+                Frames.Add(Frame);
+            }
+
+            NewSprite.Frames = Frames.ToArray();
+
+            var Spr = Sprites;
+            Array.Resize(ref Spr, Sprites.Length + 1);
+            Sprites = Spr;
+
+            Sprites[Sprites.Length - 1] = NewSprite;
+        }
+
+        /// <summary>
         /// Creates an new animation by selecting the frames from other animation
         /// </summary>
         /// <param name="OriginAnimation">The original animation name to pick the frames</param>

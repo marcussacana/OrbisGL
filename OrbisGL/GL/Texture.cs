@@ -109,20 +109,11 @@ namespace OrbisGL.GL
                     throw new Exception($"GL ERROR 0x{Error:X8}");
                 
                 CurrentTextureSize = Data.Length;
-                GC.AddMemoryPressure(CurrentTextureSize);
+                GC.AddMemoryPressure(CurrentTextureSize);             
                 
-                if (EnableFiltering)
-                {
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
-                    GLES20.GenerateMipmap(TextureType);
-                } 
-                else
-                {
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-                }
             }
+
+            SetFiltering(EnableFiltering);
         }
         public unsafe void SetDataCompressed(int Width, int Height, byte[] Data, TextureCompressionFormats Format, bool EnableFiltering)
         {
@@ -130,7 +121,7 @@ namespace OrbisGL.GL
                 throw new NotSupportedException($"Texture Resolution can't be higher than {Constants.ORBIS_MAX_TEXTURE_SIZE}x{Constants.ORBIS_MAX_TEXTURE_SIZE}");
 
             Bind(Active());
-            
+
             this.Width = Width;
             this.Height = Height;
 
@@ -147,7 +138,7 @@ namespace OrbisGL.GL
                         blockSize = 16;
                         break;
                 }
-                
+
                 int TexSize = ((Width + 3) / 4) * ((Height + 3) / 4) * blockSize;
 
                 GLES20.CompressedTexImage2D(TextureType, 0, (int)Format, Width, Height, 0, TexSize, new IntPtr(pData));
@@ -156,20 +147,35 @@ namespace OrbisGL.GL
 
                 if (Error != GLES20.GL_NO_ERROR)
                     throw new Exception($"GL ERROR 0x{Error:X8}");
-                
+
                 CurrentTextureSize = TexSize;
                 GC.AddMemoryPressure(CurrentTextureSize);
+            }
 
-                if (EnableFiltering)
-                {
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                }
-                else
-                {
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-                    GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-                }
+            SetFiltering(EnableFiltering);
+        }
+
+        /// <summary>
+        /// Enables or Disable the Texture Anti-Alising Filter
+        /// </summary>
+        /// <param name="Enable">When true the Anti-Alising Filter is actived</param>
+        public void AntiAliasing(bool Enable)
+        {
+            Bind(Active());
+            SetFiltering(Enable);
+        }
+
+        private void SetFiltering(bool EnableFiltering)
+        {
+            if (EnableFiltering)
+            {
+                GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+            }
+            else
+            {
+                GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+                GLES20.TexParameteri(TextureType, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
             }
         }
 
