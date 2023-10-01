@@ -18,7 +18,7 @@ namespace OrbisGL.GL2D
 
         protected Sprite2D SpriteView { get; set; }
 
-        private Vector2[] FrameOffsets;
+        protected Vector2[] FrameOffsets;
 
         /// <summary>
         /// Get a list of all sprites available
@@ -69,7 +69,7 @@ namespace OrbisGL.GL2D
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
-        private bool AllowTexDisposal = true;
+        protected bool AllowTexDisposal = true;
 
         public event EventHandler OnAnimationEnd;
 

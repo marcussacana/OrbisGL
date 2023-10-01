@@ -14,8 +14,6 @@ namespace OrbisGL.GL2D
     /// </summary>
     public class TiledSpriteAtlas2D : SpriteAtlas2D
     {
-        private Vector2[] FrameOffsets;
-
         /// <summary>
         /// Get or Set the loaded sprite sheet texture instance
         /// </summary>
@@ -34,8 +32,6 @@ namespace OrbisGL.GL2D
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
         public override bool Mirror { get => ((TiledTexture2D)SpriteView.Target).Mirror; set => ((TiledTexture2D)SpriteView.Target).Mirror = value; }
-
-        private bool AllowTexDisposal = true;
 
         public TiledSpriteAtlas2D() : base(new Sprite2D(new TiledTexture2D())) { }
 
@@ -155,10 +151,7 @@ namespace OrbisGL.GL2D
             this.Sprites = Sprites.ToArray();
         }
 
-        /// <summary>
-        /// Clone this sprite sharing the same texture memory
-        /// </summary>
-        /// <param name="AllowDisposal">When false, the clone instance can't dispose the shared texture</param>
+
         public override GLObject2D Clone(bool AllowDisposal)
         {
             return new TiledSpriteAtlas2D

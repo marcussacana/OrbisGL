@@ -101,7 +101,7 @@ namespace OrbisGL.GL2D
             }
         }
 
-        protected GLObject2D Parent = null;
+        public GLObject2D Parent { get; protected set; } = null;
 
         private List<GLObject2D> Children = new List<GLObject2D>();
 
@@ -277,6 +277,9 @@ namespace OrbisGL.GL2D
 
         public virtual void AddChild(GLObject2D Child)
         {
+            if (Child.Parent != null)
+                Child.Parent.RemoveChild(Child);
+
             Children.Add(Child);
             Child.Parent = this;
             Child.RefreshVertex();
