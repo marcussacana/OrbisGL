@@ -11,6 +11,7 @@ namespace OrbisGL.Audio
         bool _ThreadStarted = false;
         bool Stopped = true;
         bool Paused;
+        bool Flushing;
         BinaryReader Stream;
         IAudioOut Driver;
 
@@ -187,7 +188,9 @@ namespace OrbisGL.Audio
 
         public void Restart()
         {
+            Flushing = true;
             SkipTo(TimeSpan.Zero);
+            Driver.Reset();
             Resume();
         }
 
@@ -199,6 +202,8 @@ namespace OrbisGL.Audio
                 var EndPos = DataOffset + DataSize;
 
                 const int Grain = 512;
+
+                Flushing = false;
         
                 Driver.SetProprieties(Format.WChannels, Grain, Format.DSamplesPerSec);
                 Driver.Play(Buffer);
@@ -215,14 +220,27 @@ namespace OrbisGL.Audio
                 {
                     while (Stream.BaseStream != null && Stream.BaseStream.Position < EndPos && !Stopped && Driver.IsRunnning)
                     {
+                        while (Flushing)
+                        {
+                            if (Buffer.Length == 0)
+                                Flushing = false;
+                            Thread.Sleep(10);
+                        }
+                        
                         int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
                         Buffer.Write(DataBuffer, 0, Readed);
+                        
+                        //The Write method may hang until the data is written,
+                        //therefore the state may change to flushing inside the write method
+                        //if that's the case let's force flush just to be sure
+                        if (Flushing)
+                            Buffer.Flush();
 
                         CurrentTime += TimeSpan.FromSeconds(1);
 
                         if (Loop && Stream.BaseStream.Position >= EndPos)
                         {
-                            Stream.BaseStream.Position = 0;
+                            Stream.BaseStream.Position = DataOffset;
                             CurrentTime = TimeSpan.Zero;
                         }
 

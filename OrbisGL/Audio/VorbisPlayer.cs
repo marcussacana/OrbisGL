@@ -10,6 +10,7 @@ namespace OrbisGL.Audio
         Thread DecoderThread;
         bool Stopped;
         bool Paused;
+        private bool Flushing;
         VorbisReader Reader;
         IAudioOut Driver;
 
@@ -56,6 +57,12 @@ namespace OrbisGL.Audio
                         
                         while (!Stopped && Driver.IsRunnning)
                         {
+                            while (Flushing)
+                            {
+                                if (OutBuffer.Length == 0)
+                                    Flushing = false;
+                            }
+                            
                             while ((Paused || OutBuffer.Length >= SamplesBuffer.Length * 2) && Driver.IsRunnning)
                                 Thread.Sleep(100);
 
@@ -64,6 +71,11 @@ namespace OrbisGL.Audio
                             int ReadedBytes = Readed * sizeof(float);
 
                             OutBuffer.Write(SamplesBuffer, 0, ReadedBytes);
+
+                            if (Flushing)
+                            {
+                                OutBuffer.Flush();
+                            }
 
                             if (Readed == 0)
                             {
@@ -117,7 +129,9 @@ namespace OrbisGL.Audio
 
         public void Restart()
         {
+            Flushing = true;
             SkipTo(TimeSpan.Zero);
+            Driver.Reset();
             Resume();
         }
 

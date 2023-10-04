@@ -17,6 +17,7 @@ namespace OrbisGL.Audio
         bool FloatSample = false;
 
         bool FlushBuffer;
+        bool ResetBuffer;
 
         int Channels;
         uint Grain;
@@ -65,7 +66,9 @@ namespace OrbisGL.Audio
             
             SoundThread = new Thread(Player);
             SoundThread.Name = "AudioOut";
-            
+
+            FlushBuffer = false;
+            ResetBuffer = false;
             IsRunnning = true;
             SoundThread.Start(PCMBuffer);
         }
@@ -117,6 +120,12 @@ namespace OrbisGL.Audio
                         while (PausePlayer)
                         {
                             Kernel.sceKernelUsleep(100);
+                        }
+
+                        if (ResetBuffer)
+                        {
+                            Buffer.Flush();
+                            ResetBuffer = false;
                         }
 
                         if (Buffer.Length >= BlockSize || FlushBuffer)
@@ -175,15 +184,15 @@ namespace OrbisGL.Audio
                 }
                 finally
                 {
+                    sceAudioOutOutput(handle, null);
+                    sceAudioOutClose(handle);
+                    StopPlayer = false;
+                    SoundThread = null;
+                    handle = 0;
+                    
                     IsRunnning = false;
                 }
             }
-
-            sceAudioOutOutput(handle, null);
-            sceAudioOutClose(handle);
-            StopPlayer = false;
-            SoundThread = null;
-            handle = 0;
         }
 
         private byte LastVolume = 80;
@@ -206,6 +215,11 @@ namespace OrbisGL.Audio
         public void Flush()
         {
             FlushBuffer = true;
+        }
+
+        public void Reset()
+        {
+            ResetBuffer = true;
         }
 
         public void Suspend()

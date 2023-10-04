@@ -43,9 +43,22 @@ namespace OrbisGL
         {
             DataBuffer = null;
         }
-        
+
+        public SemaphoreSlim RSemaphore = new SemaphoreSlim(1);
+        public SemaphoreSlim WSemaphore = new SemaphoreSlim(1);
+
+        /// <summary>
+        /// Clear all ring buffer data
+        /// </summary>
         public override void Flush()
         {
+            RSemaphore.Wait();
+            WSemaphore.Wait();
+            BufferedAmount = 0;
+            ReadOffset = 0;
+            WriteOffset = 0;
+            RSemaphore.Release();
+            WSemaphore.Release();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -60,9 +73,20 @@ namespace OrbisGL
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            RSemaphore.Wait();
+
+            try
+            {
+                return DoRead(buffer, offset, count);
+            }
+            finally { RSemaphore.Release(); }
+        }
+
+        private int DoRead(byte[] buffer, int offset, int count)
+        {
             if (DataBuffer == null)
                 return 0;
-            
+
             if (ReadOffset >= Size)
             {
                 ReadOffset = 0;
@@ -94,8 +118,8 @@ namespace OrbisGL
             BufferedAmount -= ReadAmount;
 
             if (count > 0)
-                return Read(buffer, offset + ReadAmount, count) + ReadAmount;
-            
+                return DoRead(buffer, offset + ReadAmount, count) + ReadAmount;
+
             return ReadAmount;
         }
 
@@ -108,7 +132,7 @@ namespace OrbisGL
         {
             if (count > Size)
                 throw new ArgumentOutOfRangeException("count");
-            
+
             if (WriteOffset >= Size)
             {
                 WriteOffset = 0;
@@ -120,6 +144,16 @@ namespace OrbisGL
                 Thread.Sleep(100);
             }
 
+            WSemaphore.Wait();
+
+            try
+            {
+                DoWrite(buffer, inOffset, count);
+            } finally { WSemaphore.Release(); }
+        }
+
+        private void DoWrite(Span<byte> buffer, int inOffset, int count)
+        {
             int bytesToWrite = Math.Min(count, Size - WriteOffset);
 
             buffer.Slice(inOffset, bytesToWrite).CopyTo(DataBuffer.AsSpan(WriteOffset));
@@ -130,7 +164,7 @@ namespace OrbisGL
 
             if (bytesToWrite < count)
             {
-                Write(buffer, inOffset + bytesToWrite, count - bytesToWrite);
+                DoWrite(buffer, inOffset + bytesToWrite, count - bytesToWrite);
             }
         }
 
