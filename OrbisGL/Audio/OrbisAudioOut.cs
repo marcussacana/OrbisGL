@@ -27,6 +27,7 @@ namespace OrbisGL.Audio
 
         private static bool Initialized;
         public bool IsRunnning { get; private set; }
+        public bool ToBeFlushed  => ResetBuffer;
 
         public void SetProprieties(int Channels, uint Grain, uint SamplingRate = 48000, bool FloatSample = false)
         {
@@ -69,48 +70,46 @@ namespace OrbisGL.Audio
 
             FlushBuffer = false;
             ResetBuffer = false;
+            StopPlayer = false;
             IsRunnning = true;
             SoundThread.Start(PCMBuffer);
         }
 
         private unsafe void Player(object BufferObj)
         {
-            RingBuffer Buffer = (RingBuffer)BufferObj;
-
-            uint Param;
-
-            if (FloatSample)
-                Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_STEREO);
-            else
-                Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_STEREO);
-
-            handle = sceAudioOutOpen(
-                ORBIS_USER_SERVICE_USER_ID_SYSTEM, 
-                ORBIS_AUDIO_OUT_PORT_TYPE_MAIN, 0,
-                Grain, Sampling, Param);
-
-            if (handle < 0)
+            try
             {
-                IsRunnning = false;
-                throw new Exception("Failed to Initialize the Audio Driver Instance");
-            }
+                RingBuffer Buffer = (RingBuffer)BufferObj;
 
-            SetVolume(LastVolume);
+                uint Param;
 
-            int BlockSize = (int)(Grain * Channels * sizeof(short));
+                if (FloatSample)
+                    Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_FLOAT_STEREO);
+                else
+                    Param = (uint)(Channels > 2 ? ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_8CH : ORBIS_AUDIO_OUT_PARAM_FORMAT_S16_STEREO);
 
-            var WavBufferA = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
-            var WavBufferB = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
+                handle = sceAudioOutOpen(ORBIS_USER_SERVICE_USER_ID_SYSTEM, ORBIS_AUDIO_OUT_PORT_TYPE_MAIN, 0, Grain, Sampling, Param);
 
-            var fWavBufferA = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
-            var fWavBufferB = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
+                if (handle < 0)
+                {
+                    IsRunnning = false;
+                    throw new Exception("Failed to Initialize the Audio Driver Instance");
+                }
 
-            bool CurrentBuffer = false;
+                SetVolume(LastVolume);
 
-            fixed (byte* pWavBufferA = WavBufferA, pWavBufferB = WavBufferB)
-            fixed (byte* pfWaveBufferA = fWavBufferA, pfWaveBufferB = fWavBufferB)
-            {
-                try
+                int BlockSize = (int)(Grain * Channels * sizeof(short));
+
+                var WavBufferA = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
+                var WavBufferB = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
+
+                var fWavBufferA = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
+                var fWavBufferB = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
+
+                bool CurrentBuffer = false;
+
+                fixed (byte* pWavBufferA = WavBufferA, pWavBufferB = WavBufferB)
+                fixed (byte* pfWaveBufferA = fWavBufferA, pfWaveBufferB = fWavBufferB)
                 {
                     while (!StopPlayer)
                     {
@@ -179,19 +178,21 @@ namespace OrbisGL.Audio
                         }
                     }
                 }
-                catch (ThreadAbortException abort)
-                {
-                }
-                finally
-                {
-                    sceAudioOutOutput(handle, null);
-                    sceAudioOutClose(handle);
-                    StopPlayer = false;
-                    SoundThread = null;
-                    handle = 0;
-                    
-                    IsRunnning = false;
-                }
+            }
+            catch (ThreadAbortException abort)
+            {
+            }
+            finally
+            {
+                sceAudioOutOutput(handle, null);
+                sceAudioOutClose(handle);
+                
+                StopPlayer = false;
+                SoundThread = null;
+                ResetBuffer = false;
+                handle = 0;
+
+                IsRunnning = false;
             }
         }
 

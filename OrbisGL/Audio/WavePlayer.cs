@@ -11,7 +11,6 @@ namespace OrbisGL.Audio
         bool _ThreadStarted = false;
         bool Stopped = true;
         bool Paused;
-        bool Flushing;
         BinaryReader Stream;
         IAudioOut Driver;
 
@@ -48,6 +47,8 @@ namespace OrbisGL.Audio
 
         public void Open(Stream File)
         {
+            Stopped = true;
+            File.Position = 0;
             Stream = new BinaryReader(File);
             ParseHeader();
         }
@@ -188,9 +189,8 @@ namespace OrbisGL.Audio
 
         public void Restart()
         {
-            Flushing = true;
-            SkipTo(TimeSpan.Zero);
             Driver.Reset();
+            SkipTo(TimeSpan.Zero);
             Resume();
         }
 
@@ -202,8 +202,6 @@ namespace OrbisGL.Audio
                 var EndPos = DataOffset + DataSize;
 
                 const int Grain = 512;
-
-                Flushing = false;
         
                 Driver.SetProprieties(Format.WChannels, Grain, Format.DSamplesPerSec);
                 Driver.Play(Buffer);
@@ -220,21 +218,14 @@ namespace OrbisGL.Audio
                 {
                     while (Stream.BaseStream != null && Stream.BaseStream.Position < EndPos && !Stopped && Driver.IsRunnning)
                     {
-                        while (Flushing)
+                        int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
+                        
+                        while (Driver.IsRunnning && (Driver.ToBeFlushed || Buffer.CantWrite(Readed)))
                         {
-                            if (Buffer.Length == 0)
-                                Flushing = false;
                             Thread.Sleep(10);
                         }
                         
-                        int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
                         Buffer.Write(DataBuffer, 0, Readed);
-                        
-                        //The Write method may hang until the data is written,
-                        //therefore the state may change to flushing inside the write method
-                        //if that's the case let's force flush just to be sure
-                        if (Flushing)
-                            Buffer.Flush();
 
                         CurrentTime += TimeSpan.FromSeconds(1);
 

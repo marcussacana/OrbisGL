@@ -139,7 +139,7 @@ namespace OrbisGL
                 WriteLoop++;
             }
 
-            while (BufferedAmount + count >= Size)
+            while (CantWrite(count))
             {
                 Thread.Sleep(100);
             }
@@ -152,9 +152,14 @@ namespace OrbisGL
             } finally { WSemaphore.Release(); }
         }
 
-        private void DoWrite(Span<byte> buffer, int inOffset, int count)
+        public bool CantWrite(int count)
         {
-            int bytesToWrite = Math.Min(count, Size - WriteOffset);
+            return BufferedAmount + count >= Size;
+        }
+
+        private void DoWrite(Span<byte> buffer, int inOffset, int count)
+        { 
+           int bytesToWrite = Math.Min(count, Size - WriteOffset);
 
             buffer.Slice(inOffset, bytesToWrite).CopyTo(DataBuffer.AsSpan(WriteOffset));
 
