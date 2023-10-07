@@ -32,6 +32,8 @@ namespace OrbisGL.GL
                 SlotTexture.Add(0);
         }
 
+        public bool Disposed => _TextureID == -1;
+
         private int _TextureID;
         internal int TextureID {
             get

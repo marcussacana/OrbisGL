@@ -38,6 +38,13 @@ namespace OrbisGL.GL2D
         Texture TextureTile01 { get; set; }
         Texture TextureTile11 { get; set; }
 
+        /// <summary>
+        /// When set to true, indicates that the Texture should be treated as a shared texture.
+        /// This prevents accidental disposal of the texture by the garbage collector (GC).
+        /// If you set this to true, you must handle the texture disposal manually.
+        /// </summary>
+        public bool SharedTexture { get; set; } = false;
+
 
         /// <summary>
         /// Set the texture tiles
@@ -544,10 +551,13 @@ namespace OrbisGL.GL2D
 
         public override void Dispose()
         {
-            TextureTile00?.Dispose();
-            TextureTile01?.Dispose();
-            TextureTile10?.Dispose();
-            TextureTile11?.Dispose();
+            if (!SharedTexture)
+            {
+                TextureTile00?.Dispose();
+                TextureTile01?.Dispose();
+                TextureTile10?.Dispose();
+                TextureTile11?.Dispose();
+            }
 
             base.Dispose();
         }

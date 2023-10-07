@@ -18,6 +18,13 @@ namespace OrbisGL.GL2D
         /// </summary>
         public bool AutoSize { get; set; } = true;
 
+        /// <summary>
+        /// When set to true, indicates that the Texture should be treated as a shared texture.
+        /// This prevents accidental disposal of the texture by the garbage collector (GC).
+        /// If you set this to true, you must handle the texture disposal manually.
+        /// </summary>
+        public bool SharedTexture { get; set; } = false;
+
 
         float _Rotate = 0f;
         public float Rotate
@@ -150,7 +157,9 @@ namespace OrbisGL.GL2D
 
         public override void Dispose()
         {
-            Texture?.Dispose();
+            if (!SharedTexture)
+                Texture?.Dispose();
+
             base.Dispose();
         }
     }

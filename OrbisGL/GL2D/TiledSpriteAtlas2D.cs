@@ -154,7 +154,10 @@ namespace OrbisGL.GL2D
 
         public override GLObject2D Clone(bool AllowDisposal)
         {
-            return new TiledSpriteAtlas2D
+            if (Textures == null || Textures.All(x => x == null || x.Disposed))
+                throw new ObjectDisposedException("SpriteAtlas can't be cloned without an texture");
+
+            var Clone = new TiledSpriteAtlas2D
             {
                 FrameOffsets = FrameOffsets,
                 Sprites = Sprites,
@@ -163,6 +166,11 @@ namespace OrbisGL.GL2D
                 Height = Height,
                 Textures = Textures
             };
+
+            if (!AllowDisposal)
+                ((TiledTexture2D)SpriteView.Target).SharedTexture = true;
+
+            return Clone;
         }
 
         public override void Dispose()

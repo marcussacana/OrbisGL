@@ -467,7 +467,10 @@ namespace OrbisGL.GL2D
         /// <param name="AllowDisposal">When false, the clone instance can't dispose the shared texture</param>
         public virtual GLObject2D Clone(bool AllowDisposal)
         {
-            return new SpriteAtlas2D()
+            if (Texture == null || Texture.Disposed)
+                throw new ObjectDisposedException("SpriteAtlas can't be cloned without an texture");
+
+            var Clone = new SpriteAtlas2D()
             {
                 FrameOffsets = FrameOffsets,
                 Sprites = Sprites,
@@ -476,6 +479,11 @@ namespace OrbisGL.GL2D
                 Width = Width,
                 Height = Height
             };
+
+            if (!AllowDisposal)
+                ((Texture2D)Clone.SpriteView.Target).SharedTexture = true;
+
+            return Clone;
         }
 
         protected bool IsNumberSufix(XmlNode x)
