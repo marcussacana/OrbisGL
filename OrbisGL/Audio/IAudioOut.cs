@@ -36,7 +36,7 @@ namespace OrbisGL.Audio
         /// <summary>
         /// Pauses the buffer reproduction
         /// </summary>
-        void Suspend();
+        void Interrupt();
         
         /// <summary>
         /// Resumes the buffer reproduction

@@ -201,6 +201,9 @@ namespace OrbisGL.Audio
         {
             Value = Math.Min(Value, (byte)100);
 
+            if (LastVolume == Value)
+                return;
+
             LastVolume = Value;
 
             int[] Volume = new int[(int)OrbisAudioOutChannel.MAX];
@@ -223,7 +226,7 @@ namespace OrbisGL.Audio
             ResetBuffer = true;
         }
 
-        public void Suspend()
+        public void Interrupt()
         {
             PausePlayer = true;
         }
