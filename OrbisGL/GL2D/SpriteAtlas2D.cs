@@ -515,6 +515,9 @@ namespace OrbisGL.GL2D
 
         public void NextFrame()
         {
+            if (CurrentSprite == null)
+                throw new Exception("No Sprite Activated");
+
             var AnimName = CurrentSprite;
             var FrameID = SpriteView.NextFrame();
             
