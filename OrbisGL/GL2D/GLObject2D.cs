@@ -16,7 +16,12 @@ namespace OrbisGL.GL2D
         public int Height { get; set; }
 
         public bool InRoot => Parent == null;
+        
         public virtual RGBColor Color { get; set; } = RGBColor.White;
+
+        /// <summary>
+        /// An opacity value in the range 0-255
+        /// </summary>
         public virtual byte Opacity { get; set; } = 255;
 
         public IEnumerable<GLObject2D> Childs => Children;

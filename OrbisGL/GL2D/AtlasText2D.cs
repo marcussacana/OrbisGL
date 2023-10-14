@@ -1,4 +1,5 @@
 ﻿using OrbisGL.FreeTypeLib;
+using OrbisGL.GL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,28 @@ namespace OrbisGL.GL2D
         public GlyphInfo[] GlyphsInfo { get; private set; }
 
         readonly Dictionary<char, string> FrameMap;
+
+        public override byte Opacity { 
+            get => base.Opacity;
+            set
+            {
+                base.Opacity = value;
+
+                foreach (var Child in Childs)
+                    Child.Opacity = value;
+            }
+        }
+
+        public override RGBColor Color {
+            get => base.Color;
+            set
+            {
+                base.Color = value;
+
+                foreach (var Child in Childs)
+                    Child.Color = value;
+            }
+        }
 
         public AtlasText2D(SpriteAtlas2D Atlas, Dictionary<char, string> FrameMap)
         {
@@ -58,12 +81,16 @@ namespace OrbisGL.GL2D
 
                 Glyphs.Add(new GlyphInfo(X, Y, Glyph.Area.Width, Glyph.Area.Height, Text[i], i));
 
+                //Add glyph in the rendering queue
                 if (Sprite != null)
                 {
                     var GlyphSprite = (SpriteAtlas2D)Texture.Clone(false);
+                    GlyphSprite.Color = Color;
+                    GlyphSprite.Opacity = Opacity;
                     GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
                     var DeltaLineBase = LineBase - Glyph.Area.Height;
                     GlyphSprite.Position = new Vector2(X, Y + DeltaLineBase);
+                    GlyphSprite.SetZoom(Zoom);
                     AddChild(GlyphSprite);
                 }
 
