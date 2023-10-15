@@ -94,6 +94,7 @@
                                   | ORBIS_AUDIO_VOLUME_FLAG_BL_CH | ORBIS_AUDIO_VOLUME_FLAG_BR_CH;
 
         public const uint ORBIS_AUDIO_OUT_ERROR_ALREADY_INIT = 0x8026000E;
+        public const uint ORBIS_AUDIO_OUT_ERROR_PORT_FULL = 0x80260005;
 
 
         public const int ORBIS_IME_MAX_TEXT_LENGTH = 2048;

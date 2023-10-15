@@ -172,6 +172,12 @@ namespace OrbisGL.Audio
             
             if (PlayerThread == null)
             {
+                while (Driver.IsRunnning)
+                {
+                    Driver.Stop();
+                    Kernel.sceKernelUsleep(1000);
+                }
+                
                 _ThreadStarted = false;
                 PlayerThread = new Thread(Player);
                 PlayerThread.Name = "WavePlayer";

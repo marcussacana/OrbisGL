@@ -90,6 +90,12 @@ namespace OrbisGL.Audio
 
                 handle = sceAudioOutOpen(ORBIS_USER_SERVICE_USER_ID_SYSTEM, ORBIS_AUDIO_OUT_PORT_TYPE_MAIN, 0, Grain, Sampling, Param);
 
+                if (handle == Constants.ORBIS_AUDIO_OUT_ERROR_PORT_FULL)
+                {
+                    IsRunnning = false;
+                    throw new Exception("Too Many Audio Ports Open");
+                }
+                
                 if (handle < 0)
                 {
                     IsRunnning = false;
@@ -116,10 +122,13 @@ namespace OrbisGL.Audio
                         short* WaveBuffer = (short*)(CurrentBuffer ? pWavBufferA : pWavBufferB);
                         float* fWaveBuffer = (float*)(CurrentBuffer ? pfWaveBufferA : pfWaveBufferB);
 
-                        while (PausePlayer)
+                        while (PausePlayer && !StopPlayer)
                         {
                             Kernel.sceKernelUsleep(100);
                         }
+                        
+                        if (StopPlayer)
+                            continue;
 
                         if (ResetBuffer)
                         {
