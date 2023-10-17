@@ -11,8 +11,9 @@ namespace OrbisGL.GL2D
     {
         int TextureUniformLocation;
         int MirrorUniformLocation;
+        int NegativeUniformLocation;
 
-        
+
         /// <summary>
         /// When true the vertex will update the Texture2D instance size to fit the texture size automatically.
         /// </summary>
@@ -36,7 +37,16 @@ namespace OrbisGL.GL2D
                 RefreshVertex();
             }
         }
+
+        /// <summary>
+        /// When set to true the texture displays horizontally inverted
+        /// </summary>
         public bool Mirror { get; set; }
+
+        /// <summary>
+        /// When set to true the texture color displays in negative
+        /// </summary>
+        public bool Negative { get; set; }
 
         /// <summary>
         /// Get or Set the texture instance, 
@@ -90,6 +100,7 @@ namespace OrbisGL.GL2D
 
             TextureUniformLocation = GLES20.GetUniformLocation(hProgram, "Texture");
             MirrorUniformLocation = GLES20.GetUniformLocation(hProgram, "Mirror");
+            NegativeUniformLocation = GLES20.GetUniformLocation(hProgram, "Negative");
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);
             Program.AddBufferAttribute("uv", AttributeType.Float, AttributeSize.Vector2);
@@ -151,6 +162,7 @@ namespace OrbisGL.GL2D
             {
                 Program.SetUniform(TextureUniformLocation, Texture.Active());
                 Program.SetUniform(MirrorUniformLocation, Mirror ? 1 : 0);
+                Program.SetUniform(NegativeUniformLocation, Negative ? 1 : 0);
             }
             base.Draw(Tick);
         }

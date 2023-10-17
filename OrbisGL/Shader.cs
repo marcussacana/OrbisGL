@@ -115,6 +115,8 @@ namespace OrbisGL
 #if DEBUG
             ExportShaderCache = true;
 #endif
+
+            Kernel.Log("Starting Shader Precompiler...");
             
             var Shaders = ResLoader.ResourcesList
                 .Where(x => x.EndsWith(".glsl", StringComparison.InvariantCultureIgnoreCase));
@@ -129,6 +131,7 @@ namespace OrbisGL
 
             foreach (var Resource in Vertex)
             {
+                Kernel.Log("Compiling Vertex Shader: " + Resource);
                 var Source = ResLoader.GetResource(Resource);
                 int hShader = GetShader(GLES20.GL_VERTEX_SHADER, Source);
                 GLES20.DeleteShader(hShader);
@@ -136,6 +139,7 @@ namespace OrbisGL
             
             foreach (var Resource in Fragments)
             {
+                Kernel.Log("Compiling Fragment Shader: " + Resource);
                 var Source = ResLoader.GetResource(Resource);
                 int hShader = GetShader(GLES20.GL_FRAGMENT_SHADER, Source);
                 GLES20.DeleteShader(hShader);
@@ -263,10 +267,12 @@ namespace OrbisGL
                     try
                     {
                         Output = File.Create(DefaultShaderCachePath, 1024 * 1024);
+                        Kernel.Log("Precompiled Shader Written at: " + DefaultShaderCachePath);
                     }
                     catch
                     {
                         Output = File.Create("/data/Shaders.bin");
+                        Kernel.Log("Precompiled Shader Written at: /data/Shaders.bin");
                     }
 
                     using (BinaryWriter Writer = new BinaryWriter(Output))

@@ -16,6 +16,7 @@ namespace OrbisGL.GL2D
         int Texture01UniformLocation;
         int Texture11UniformLocation;
         int MirrorUniformLocation;
+        int NegativeUniformLocation;
         int TileSizeUniformLocation;
 
         float _Rotate = 0f;
@@ -30,8 +31,16 @@ namespace OrbisGL.GL2D
         }
 
         Vector2 TileSize = new Vector2(1, 1);
-        
+
+        /// <summary>
+        /// When set to true the texture displays horizontally inverted
+        /// </summary>
         public bool Mirror { get; set; }
+
+        /// <summary>
+        /// When set to true the texture color displays in negative
+        /// </summary>
+        public bool Negative { get; set; }
 
         Texture TextureTile00 { get; set; }
         Texture TextureTile10 { get; set; }
@@ -90,6 +99,7 @@ namespace OrbisGL.GL2D
             TileSizeUniformLocation = GLES20.GetUniformLocation(hProgram, "TileSize");
 
             MirrorUniformLocation = GLES20.GetUniformLocation(hProgram, "Mirror");
+            NegativeUniformLocation = GLES20.GetUniformLocation(hProgram, "Negative");
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);
             Program.AddBufferAttribute("uv", AttributeType.Float, AttributeSize.Vector2);
@@ -534,6 +544,7 @@ namespace OrbisGL.GL2D
         public override void Draw(long Tick)
         {
             Program.SetUniform(MirrorUniformLocation, Mirror ? 1 : 0);
+            Program.SetUniform(NegativeUniformLocation, Negative ? 1 : 0);
 
             if (TextureTile00 != null)
                 Program.SetUniform(Texture00UniformLocation, TextureTile00.Active());

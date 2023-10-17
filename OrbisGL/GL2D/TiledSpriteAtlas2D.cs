@@ -32,6 +32,7 @@ namespace OrbisGL.GL2D
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
         public override bool Mirror { get => ((TiledTexture2D)SpriteView.Target).Mirror; set => ((TiledTexture2D)SpriteView.Target).Mirror = value; }
+        public override bool Negative { get => ((TiledTexture2D)SpriteView.Target).Negative; set => ((TiledTexture2D)SpriteView.Target).Negative = value; }
 
         public TiledSpriteAtlas2D() : base(new Sprite2D(new TiledTexture2D())) { }
 

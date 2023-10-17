@@ -37,6 +37,40 @@ namespace OrbisGL.GL2D
             }
         }
 
+        public string Text { get; private set; }
+
+        bool _Negative;
+        public bool Negative { 
+            get => _Negative;
+            set
+            {
+                bool OldVal = _Negative;
+                _Negative = value;
+
+                foreach (var Child in Childs)
+                {
+                    //Outline glyphs stores an inverted negative value
+                    if (Child is SpriteAtlas2D Glyph)
+                        Glyph.Negative = OldVal == Glyph.Negative ? value : !value;
+                }
+            } 
+        }
+
+        float _Outline = 0;
+
+        /// <summary>
+        /// Creates a text outline effect using the negative color.
+        /// The higher the value, the further the outline extends. 
+        /// </summary>
+        /// 
+        public float Outline {
+            get => _Outline; 
+            set {
+                _Outline = value;
+                ApplyOutline();
+            } 
+        }
+
         public AtlasText2D(SpriteAtlas2D Atlas, Dictionary<char, string> FrameMap)
         {
             Texture = Atlas;
@@ -45,12 +79,18 @@ namespace OrbisGL.GL2D
 
         public void SetText(string Text)
         {
-            RemoveChildren(true);
 
             var A = QueryGlyph('A');
 
             if (A == null)
                 throw new Exception("The `A` Glyph is required for all font atlas");
+
+            if (Text == this.Text && Childs.Any())
+                return;
+
+            this.Text = Text;
+            
+            RemoveChildren(true);
 
             var ARect = A.Value.Area;
 
@@ -86,6 +126,7 @@ namespace OrbisGL.GL2D
                 {
                     var GlyphSprite = (SpriteAtlas2D)Texture.Clone(false);
                     GlyphSprite.Color = Color;
+                    GlyphSprite.Negative = Negative;
                     GlyphSprite.Opacity = Opacity;
                     GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
                     var DeltaLineBase = LineBase - Glyph.Area.Height;
@@ -104,6 +145,56 @@ namespace OrbisGL.GL2D
 
             Width = (int)XMax;
             Height = (int)YMax;
+
+            ApplyOutline();
+        }
+
+        private void ApplyOutline()
+        {
+            foreach (var Child in Childs.SelectMany(x => x.Childs))
+            {
+                if (Child is SpriteAtlas2D)
+                    Child.RemoveChildren(true);
+            }
+
+            if (Outline <= 0)                
+                return;
+
+            List<GLObject2D> Outlines = new List<GLObject2D>();
+
+            foreach (var Child in Childs)
+            {
+                if (Child is SpriteAtlas2D Glyph)
+                {
+                    var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
+                    var GlyphZoom = Coordinates2D.ParseZoomFactor(Glyph.Zoom);
+
+                    var OutlineGlyph = (SpriteAtlas2D)Glyph.Clone(false);
+
+                    OutlineGlyph.Color = Glyph.Color;
+                    OutlineGlyph.Negative = !Glyph.Negative;
+                    OutlineGlyph.Opacity = Opacity;
+                    OutlineGlyph.SetActiveAnimation(Glyph.CurrentSprite);
+                    OutlineGlyph.SetZoom(Coordinates2D.ParseZoomFactor(GlyphZoom + Outline));
+
+                    var OutlineMiddle = new Vector2(OutlineGlyph.ZoomWidth, OutlineGlyph.ZoomHeight) / 2;
+
+                    OutlineGlyph.ZoomPosition = Glyph.ZoomPosition - (OutlineMiddle - GlyphMiddle);
+
+                    Outlines.Add(OutlineGlyph);
+                }
+            }
+
+            List<GLObject2D> Glyphs = new List<GLObject2D>(Childs);
+
+            RemoveChildren(false);
+
+
+            foreach (var Child in Outlines)
+                AddChild(Child);
+
+            foreach (var Child in Glyphs)
+                AddChild(Child);
         }
 
         private GlyphInfo? QueryGlyph(char Char)

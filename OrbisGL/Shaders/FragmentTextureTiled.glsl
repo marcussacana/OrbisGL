@@ -18,6 +18,7 @@ uniform vec2 TileSize;
 uniform vec4 VisibleRect;
 uniform vec4 Color;
 uniform bool Mirror;
+uniform bool Negative;
 
 void main(void) {    
     vec2 UVMod = Mirror ? vec2(-1, 1) * UV : UV;
@@ -54,6 +55,10 @@ void main(void) {
     else
         gl_FragColor = vec4(vec3(UV00, 1.), 1.);
    */
+   
+
+    if (Negative)
+        gl_FragColor.rgb = (1. - gl_FragColor.rgb);
 
     gl_FragColor.rgb *= Color.rgb;
     gl_FragColor.a *= Color.a;

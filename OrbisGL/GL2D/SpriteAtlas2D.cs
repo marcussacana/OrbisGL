@@ -62,10 +62,17 @@ namespace OrbisGL.GL2D
                 }
             }
         }
+
         /// <summary>
-        /// Enable or Disable the horizontal mirror effect
+        /// When set to true the texture displays horizontally inverted
         /// </summary>
         public virtual bool Mirror { get => ((Texture2D)SpriteView.Target).Mirror; set => ((Texture2D)SpriteView.Target).Mirror = value; }
+
+        /// <summary>
+        /// When set to true the texture color displays in negative
+        /// </summary>
+        public virtual bool Negative { get => ((Texture2D)SpriteView.Target).Negative; set => ((Texture2D)SpriteView.Target).Negative = value; }
+        
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
