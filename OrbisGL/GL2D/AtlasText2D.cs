@@ -102,8 +102,9 @@ namespace OrbisGL.GL2D
                 return;
 
             this.Text = Text;
-            
-            RemoveChildren(true);
+
+            if (StaticText)
+                RemoveChildren(true);
 
             var ARect = A.Value.Area;
 
@@ -195,45 +196,88 @@ namespace OrbisGL.GL2D
                     Child.RemoveChildren(true);
             }
 
-            if (Outline <= 0 || !StaticText)                
+            if (Outline <= 0 || Text == null)                
                 return;
 
-            List<GLObject2D> Outlines = new List<GLObject2D>();
-
-            foreach (var Child in Childs)
+            if (StaticText)
             {
-                if (Child is SpriteAtlas2D Glyph)
-                {
-                    var OutlineGlyph = (SpriteAtlas2D)Glyph.Clone(false);
+                if (Text == null)
+                    return;
 
-                    OutlineGlyph.Color = Glyph.Color;
-                    OutlineGlyph.Negative = !Glyph.Negative;
-                    OutlineGlyph.Opacity = Opacity;
-                    OutlineGlyph.SetActiveAnimation(Glyph.CurrentSprite);
+                List<GLObject2D> Outlines = new List<GLObject2D>();
+
+                foreach (var Child in Childs)
+                {
+                    if (Child is SpriteAtlas2D Glyph)
+                    {
+                        var OutlineGlyph = (SpriteAtlas2D)Glyph.Clone(false);
+
+                        OutlineGlyph.Color = Glyph.Color;
+                        OutlineGlyph.Negative = !Glyph.Negative;
+                        OutlineGlyph.Opacity = Opacity;
+                        OutlineGlyph.SetActiveAnimation(Glyph.CurrentSprite);
+
+                        var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
+                        var GlyphZoom = Coordinates2D.ParseZoomFactor(Zoom);
+
+                        OutlineGlyph.SetZoom(Coordinates2D.ParseZoomFactor(GlyphZoom + Outline));
+
+                        var OutlineMiddle = new Vector2(OutlineGlyph.ZoomWidth, OutlineGlyph.ZoomHeight) / 2;
+
+                        OutlineGlyph.ZoomPosition = Glyph.ZoomPosition - (OutlineMiddle - GlyphMiddle);
+
+                        Outlines.Add(OutlineGlyph);
+                    }
+                }
+
+                List<GLObject2D> Glyphs = new List<GLObject2D>(Childs);
+
+                RemoveChildren(false);
+
+
+                foreach (var Child in Outlines)
+                    AddChild(Child);
+
+                foreach (var Child in Glyphs)
+                    AddChild(Child);
+            }
+            else
+            {
+                var GlyphZoom = Coordinates2D.ParseZoomFactor(Zoom);
+                var OutlineZoom = Coordinates2D.ParseZoomFactor(GlyphZoom + Outline);
+
+                OutlinePosition.Clear();
+
+                for (int i = 0, x = 0; i < Text.Length; i++)
+                {
+                    var Char = Text[i];
+
+                    if (!GlyphCache.ContainsKey(Char))
+                        continue;
+
+                    var Glyph = GlyphCache[Char];
+                    var GlyphPos = GlyphPosition[x++];
+
+                    Glyph.SetZoom();
+
+                    Glyph.Position = GlyphPos;
+
+                    Glyph.SetZoom(Zoom);
 
                     var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
-                    var GlyphZoom = Coordinates2D.ParseZoomFactor(Zoom);
 
-                    OutlineGlyph.SetZoom(Coordinates2D.ParseZoomFactor(GlyphZoom + Outline));
+                    var OriPos = Glyph.ZoomPosition;
 
-                    var OutlineMiddle = new Vector2(OutlineGlyph.ZoomWidth, OutlineGlyph.ZoomHeight) / 2;
+                    Glyph.SetZoom(OutlineZoom);
 
-                    OutlineGlyph.ZoomPosition = Glyph.ZoomPosition - (OutlineMiddle - GlyphMiddle);
+                    var OutlineMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
 
-                    Outlines.Add(OutlineGlyph);
+                    OutlinePosition.Add(OriPos - (OutlineMiddle - GlyphMiddle));
+
                 }
+
+                return;
             }
-
-            List<GLObject2D> Glyphs = new List<GLObject2D>(Childs);
-
-            RemoveChildren(false);
-
-
-            foreach (var Child in Outlines)
-                AddChild(Child);
-
-            foreach (var Child in Glyphs)
-                AddChild(Child);
         }
 
         private GlyphInfo? QueryGlyph(char Char)
@@ -278,17 +322,9 @@ namespace OrbisGL.GL2D
 
                     if (Outline > 0)
                     {
-                        var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
-
-                        Glyph.Position = GlyphPos;
-
-                        var OriPos = Glyph.ZoomPosition;
-
                         Glyph.SetZoom(OutlineZoom);
 
-                        var OutlineMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
-
-                        Glyph.ZoomPosition = OriPos - (OutlineMiddle - GlyphMiddle);
+                        Glyph.ZoomPosition = OutlinePosition[x - 1];
 
                         Glyph.Negative = !Negative;
                         Glyph.Draw(Tick);
