@@ -246,6 +246,9 @@ namespace OrbisGL.GL2D
         /// </summary>
         public virtual void SetZoom(float Value = 1f)
         {
+            if (Zoom == Value)
+                return;
+
             SetChildrenZoom(Value);
             RefreshVertex();
         }

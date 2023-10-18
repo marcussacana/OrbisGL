@@ -11,9 +11,22 @@ namespace OrbisGL.GL2D
     {
         SpriteAtlas2D Texture;
 
+        public Dictionary<char, SpriteAtlas2D> GlyphCache = new Dictionary<char, SpriteAtlas2D>();
+        public Dictionary<char, SpriteAtlas2D> OutlineCache = new Dictionary<char, SpriteAtlas2D>();
+
+        List<Vector2> GlyphPosition = new List<Vector2>();
+        List<Vector2> OutlinePosition = new List<Vector2>();
+
         public GlyphInfo[] GlyphsInfo { get; private set; }
 
         readonly Dictionary<char, string> FrameMap;
+
+
+        /// <summary>
+        /// When set to true, the <see cref="AtlasText2D"/> will be optimized for text that doesn't change frequently. This prioritizes rendering speed. 
+        /// When set to false, it optimizes for text that requires frequent updates, prioritizing text update speed.
+        /// </summary>
+        public bool StaticText { get; set; } = false;
 
         public override byte Opacity { 
             get => base.Opacity;
@@ -102,6 +115,7 @@ namespace OrbisGL.GL2D
             GlyphInfo SpaceGlyph = new GlyphInfo(0, 0, SpaceWidth, LineBase, ' ', 0);
 
             List<GlyphInfo> Glyphs = new List<GlyphInfo>();
+            GlyphPosition.Clear();
 
             float X = 0, Y = 0;
 
@@ -124,15 +138,39 @@ namespace OrbisGL.GL2D
                 //Add glyph in the rendering queue
                 if (Sprite != null)
                 {
-                    var GlyphSprite = (SpriteAtlas2D)Texture.Clone(false);
-                    GlyphSprite.Color = Color;
-                    GlyphSprite.Negative = Negative;
-                    GlyphSprite.Opacity = Opacity;
-                    GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
-                    var DeltaLineBase = LineBase - Glyph.Area.Height;
-                    GlyphSprite.Position = new Vector2(X, Y + DeltaLineBase);
-                    GlyphSprite.SetZoom(Zoom);
-                    AddChild(GlyphSprite);
+                    if (StaticText)
+                    {
+                        var GlyphSprite = (SpriteAtlas2D)Texture.Clone(false);
+                        GlyphSprite.Color = Color;
+                        GlyphSprite.Negative = Negative;
+                        GlyphSprite.Opacity = Opacity;
+                        GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
+                        var DeltaLineBase = LineBase - Glyph.Area.Height;
+                        GlyphSprite.Position = new Vector2(X, Y + DeltaLineBase);
+                        GlyphSprite.SetZoom(Zoom);
+                        AddChild(GlyphSprite);
+                    }
+                    else if (!GlyphCache.ContainsKey(Text[i]))
+                    {
+                        var GlyphSprite = (SpriteAtlas2D)Texture.Clone(false);
+                        GlyphSprite.Color = Color;
+                        GlyphSprite.Negative = Negative;
+                        GlyphSprite.Opacity = Opacity;
+                        GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
+                        var DeltaLineBase = LineBase - Glyph.Area.Height;
+
+                        GlyphCache[Text[i]] = GlyphSprite;
+                        GlyphPosition.Add(new Vector2(X, Y + DeltaLineBase));
+                        AddChild(GlyphSprite);
+                    }
+                    else
+                    {
+                        var GlyphSprite = GlyphCache[Text[i]];
+                        var DeltaLineBase = LineBase - Glyph.Area.Height;
+
+                        GlyphCache[Text[i]] = GlyphSprite;
+                        GlyphPosition.Add(new Vector2(X, Y + DeltaLineBase));
+                    }
                 }
 
                 X += Glyph.Area.Width;
@@ -157,7 +195,7 @@ namespace OrbisGL.GL2D
                     Child.RemoveChildren(true);
             }
 
-            if (Outline <= 0)                
+            if (Outline <= 0 || !StaticText)                
                 return;
 
             List<GLObject2D> Outlines = new List<GLObject2D>();
@@ -166,15 +204,16 @@ namespace OrbisGL.GL2D
             {
                 if (Child is SpriteAtlas2D Glyph)
                 {
-                    var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
-                    var GlyphZoom = Coordinates2D.ParseZoomFactor(Glyph.Zoom);
-
                     var OutlineGlyph = (SpriteAtlas2D)Glyph.Clone(false);
 
                     OutlineGlyph.Color = Glyph.Color;
                     OutlineGlyph.Negative = !Glyph.Negative;
                     OutlineGlyph.Opacity = Opacity;
                     OutlineGlyph.SetActiveAnimation(Glyph.CurrentSprite);
+
+                    var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
+                    var GlyphZoom = Coordinates2D.ParseZoomFactor(Zoom);
+
                     OutlineGlyph.SetZoom(Coordinates2D.ParseZoomFactor(GlyphZoom + Outline));
 
                     var OutlineMiddle = new Vector2(OutlineGlyph.ZoomWidth, OutlineGlyph.ZoomHeight) / 2;
@@ -218,6 +257,70 @@ namespace OrbisGL.GL2D
                 }
             }
             return null;
+        }
+
+        public override void Draw(long Tick)
+        {
+            if (!StaticText)
+            {
+                var GlyphZoom = Coordinates2D.ParseZoomFactor(Zoom);
+                var OutlineZoom = Coordinates2D.ParseZoomFactor(GlyphZoom + Outline);
+
+                for (int i = 0, x = 0; i < Text.Length; i++)
+                {
+                    var Char = Text[i];
+                    
+                    if (!GlyphCache.ContainsKey(Char))
+                        continue;
+
+                    var Glyph = GlyphCache[Char];
+                    var GlyphPos = GlyphPosition[x++];
+
+                    if (Outline > 0)
+                    {
+                        var GlyphMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
+
+                        Glyph.Position = GlyphPos;
+
+                        var OriPos = Glyph.ZoomPosition;
+
+                        Glyph.SetZoom(OutlineZoom);
+
+                        var OutlineMiddle = new Vector2(Glyph.ZoomWidth, Glyph.ZoomHeight) / 2;
+
+                        Glyph.ZoomPosition = OriPos - (OutlineMiddle - GlyphMiddle);
+
+                        Glyph.Negative = !Negative;
+                        Glyph.Draw(Tick);
+                        Glyph.Negative = !Negative;
+
+                        Glyph.SetZoom(1);
+                    }
+
+                    Glyph.Color = Color;
+                    Glyph.Opacity = Opacity;
+                    Glyph.Negative = Negative;
+                    Glyph.Position = GlyphPos;
+
+                    Glyph.SetZoom(Zoom);
+
+                    Glyph.Draw(Tick);
+                }
+
+                return;
+            }
+
+            base.Draw(Tick);
+        }
+
+        public override void Dispose()
+        {
+            foreach (var Glyph in GlyphCache.Values)
+                Glyph.Dispose();
+
+            GlyphCache.Clear();
+
+            base.Dispose();
         }
     }
 }
