@@ -26,6 +26,9 @@ namespace OrbisGL.GL2D
 
         public IEnumerable<GLObject2D> Childs => Children;
 
+        /// <summary>
+        /// XY in Pixels of the object drawing location
+        /// </summary>
         public Vector2 Position
         {
             get => _Position;
@@ -92,6 +95,7 @@ namespace OrbisGL.GL2D
 
 
         public Rectangle? VisibleRectangle { get; protected set; }
+
         public Rectangle Rectangle
         {
             get
@@ -111,8 +115,8 @@ namespace OrbisGL.GL2D
         private List<GLObject2D> Children = new List<GLObject2D>();
 
         /// <summary>
-        /// Represent an offset of the object drawing location,
-        /// Calculate the offset with <see cref="XOffset">XOffset</see> and <see cref="YOffset">YOffset</see>
+        /// Represents an vertex offset of the object's drawing location.
+        /// Calculate the offset pixels using <see cref="XOffset"/> and <see cref="YOffset"/>.
         /// </summary>
         protected Vector2 Offset { get; set; }
 
@@ -121,7 +125,15 @@ namespace OrbisGL.GL2D
 
         protected Vector2 AbsoluteOffset => Parent?.AbsoluteOffset + Offset ?? Offset;
 
+        /// <summary>
+        /// Represents the XY drawing coordinates relative to the screen.
+        /// </summary>
         protected Vector2 AbsolutePosition => Parent?.AbsolutePosition + Position ?? Position;
+
+        /// <summary>
+        /// Represents the XY drawing coordinates relative to the screen, considering the computed zoom distance.
+        /// </summary>
+        protected Vector2 AbsoluteZoomPosition => Parent?.AbsoluteZoomPosition + ZoomPosition ?? ZoomPosition;
 
 
         private Vector2 PixelOffset = new Vector2(XOffset, YOffset);
