@@ -112,9 +112,17 @@ namespace OrbisGL.GL
 
             Coordinates2D.SetSize(Width, Height);
 
-            
+
 #if ORBIS
-            GLDisplay = new EGLDisplay(IntPtr.Zero, Width, Height, Config.System, Config.VideoShared, Config.Flexible, Config.VideoPrivate);
+            var Settings = new EGLSettings(IntPtr.Zero, Width, Height, Config.System, Config.VideoShared, Config.Flexible, Config.VideoPrivate);
+
+#if DEBUG
+            Settings.ForceShaderCompiler = true;
+#endif
+
+            GLDisplay = new EGLDisplay(Settings);
+
+            Kernel.Log("Loading libSceMbus...");
             
             Kernel.LoadStartModule("libSceMbus.sprx");//For Mouse and Dualshock Support
 #endif
@@ -126,6 +134,8 @@ namespace OrbisGL.GL
 
             this.Width = Width;
             this.Height = Height;
+
+            Kernel.Log("OrbisGL Initialized.");
         }
 
 
@@ -467,14 +477,17 @@ namespace OrbisGL.GL
                 return;
             
             Initialized = true;
-            
+
 #if ORBIS
             UserService.Initialize();
             UserService.HideSplashScreen();
             GLES20.Viewport(0, 0, GLDisplay.Width, GLDisplay.Height);
 #else
             if (GLDisplay == null)
-                GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.VideoShared, GPUMemoryConfig.Default.Flexible, GPUMemoryConfig.Default.VideoPrivate);
+            {
+                var Settings = new EGLSettings(Handler, Width, Height, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.VideoShared, GPUMemoryConfig.Default.Flexible, GPUMemoryConfig.Default.VideoPrivate);
+                GLDisplay = new EGLDisplay(Settings);
+            }
 #endif
         }
 
@@ -555,7 +568,9 @@ namespace OrbisGL.GL
             }
 
             GLDisplay.Dispose();
-            GLDisplay = new EGLDisplay(Handler, Width, Height, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.VideoShared, GPUMemoryConfig.Default.Flexible, GPUMemoryConfig.Default.VideoPrivate);
+
+            var Settings = new EGLSettings(Handler, Width, Height, GPUMemoryConfig.Default.System, GPUMemoryConfig.Default.VideoShared, GPUMemoryConfig.Default.Flexible, GPUMemoryConfig.Default.VideoPrivate);
+            GLDisplay = new EGLDisplay(Settings);
 
             GLES20.Viewport(0, 0, Width, Height);
         }
