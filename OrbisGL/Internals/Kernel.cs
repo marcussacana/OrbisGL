@@ -38,9 +38,11 @@ namespace Orbis.Internals
 
         public static void Log(string Message)
         {
+#if ORBIS
             var pMsg = AllocString(Message);
             Log(pMsg);
             free(pMsg);
+#endif
         }
 
         public static void* AllocString(string String)
