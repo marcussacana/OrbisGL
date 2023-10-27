@@ -113,18 +113,36 @@ namespace OrbisGL.GL2D
             return (Y / MaxHeight);
         }
 
+        /// <summary>
+        /// Gets the center (X, Y) coordinates of an object relative to its current position.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this GLObject2D Obj) => Obj.Position.GetMiddle(Obj.Width, Obj.Height);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this Vector2 Size, int Width, int Height) => GetMiddle(Size, new Vector2(Width, Height));
 
+        /// <summary>
+        /// Computes the (X, Y) coordinates for a child object centered within the target object.
+        /// </summary>
+        /// <param name="Obj">The target object</param>
+        /// <param name="Child">The child object</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this GLObject2D Obj, GLObject2D Child) => GetMiddle(new Vector2(Obj.Width, Obj.Height), new Vector2(Child.Width, Child.Height));
-        
+
+        /// <summary>
+        /// Computes the (X, Y) coordinates for a child object centered within the target object with zoom applied.
+        /// </summary>
+        /// <param name="Obj">The target object</param>
+        /// <param name="Child">The child object</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetZoomMiddle(this GLObject2D Obj, GLObject2D Child) => GetMiddle(new Vector2(Obj.ZoomWidth, Obj.ZoomHeight), new Vector2(Child.ZoomWidth, Child.ZoomHeight));
 
+        /// <summary>
+        /// Computes the (X, Y) coordinates for centering a child object within a parent object.
+        /// </summary>
+        /// <param name="Size">The size of the parent object</param>
+        /// <param name="ChildSize">The size of the child object</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetMiddle(this Vector2 Size, Vector2 ChildSize)
         {

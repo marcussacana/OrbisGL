@@ -512,7 +512,7 @@ namespace OrbisGL.GL
         }
 
         /// <summary>
-        /// Add an Object to be rendred
+        /// Add an Object to be rendered
         /// </summary>
         /// <param name="Object">The renderable object</param>
         public void AddObject(IRenderable Object)
@@ -538,12 +538,15 @@ namespace OrbisGL.GL
         /// <summary>
         /// Remove all renderable objects
         /// </summary>
-        public void RemoveObjects()
+        public void RemoveObjects(bool Dispose = false)
         {
             foreach (var Object in _Objects)
             {
                 if (Object is Control Controller)
                     Controller._Application = null;
+
+                if (Dispose)
+                    Object.Dispose();
             }
 
             _Objects.Clear();

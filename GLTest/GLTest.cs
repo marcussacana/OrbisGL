@@ -23,6 +23,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using System.Diagnostics;
 using Orbis.Scene;
 using System.Windows.Markup;
+using Orbis.Interfaces;
 
 namespace GLTest
 {
@@ -903,7 +904,7 @@ void main(void) {
         }
 
 #if !ORBIS
-        StartMenuScene SM;
+        ILoadable SM;
 #endif
 
         CharacterAnim Anim;
@@ -921,7 +922,7 @@ void main(void) {
 
             panel1.Visible = false;
             
-            SM = new StartMenuScene();
+            SM = new IntroScene();
 
             SM.Load(i =>
             {
