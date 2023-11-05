@@ -24,6 +24,8 @@ using System.Diagnostics;
 using Orbis.Scene;
 using System.Windows.Markup;
 using Orbis.Interfaces;
+using static OrbisGL.Storage.OrbisSaveDataDialogInterop;
+using System.Runtime.InteropServices;
 
 namespace GLTest
 {
@@ -947,6 +949,34 @@ void main(void) {
 
             GLControl.GLApplication.AddObject(Sprite);
             */
+#endif
+        }
+        private void button24_Click(object sender, EventArgs e)
+        {
+#if DEBUG
+            var Param = new OrbisSaveDataDialogParam();
+
+            Param.baseParam.size = 48;
+            Param.baseParam.magic = 1;
+            Param.baseParam.reserved = new byte[24];
+            Param.dispType = OrbisSaveDataDialogType.ORBIS_SAVE_DATA_DIALOG_TYPE_SAVE;
+            Param.mode = OrbisSaveDataDialogMode.ORBIS_SAVE_DATA_DIALOG_MODE_SYSTEM_MSG;
+            Param.size = 0x98;
+
+            Param.items = new OrbisSaveDataDialogItems()
+            {
+                userId = 0x11223344,
+                newItem = new OrbisSaveDataDialogNewItem()
+                {
+                    title = IntPtr.Zero
+                }
+            };
+
+            using (var stream = new MemoryStream())
+            {
+                var Addr = Param.CopyTo(stream).ToArray();
+                File.WriteAllBytes("rst.dbg", stream.ToArray());
+            }
 #endif
         }
     }

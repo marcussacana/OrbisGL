@@ -104,6 +104,8 @@
         public const int ORBIS_USER_SERVICE_USER_ID_SYSTEM = 0x000000FF;
         public const int ORBIS_SYSTEM_SERVICE_PARAM_ID_LANG = 0x00000001;
 
+        public const uint ORBIS_COMMON_DIALOG_MAGIC_NUMBER = 0xC0D1A109;
+
         public const int MaxTouchNum = 2;
         public const int MaxTouchX = 1919;
         public const int MaxTouchY = 941;

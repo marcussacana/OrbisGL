@@ -55,6 +55,7 @@ namespace GLTest
             this.button22 = new System.Windows.Forms.Button();
             this.button23 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button24 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -315,6 +316,7 @@ namespace GLTest
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Controls.Add(this.button24);
             this.panel1.Controls.Add(this.button23);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.button22);
@@ -342,6 +344,17 @@ namespace GLTest
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1238, 60);
             this.panel1.TabIndex = 23;
+            // 
+            // button24
+            // 
+            this.button24.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button24.Location = new System.Drawing.Point(831, 5);
+            this.button24.Name = "button24";
+            this.button24.Size = new System.Drawing.Size(91, 23);
+            this.button24.TabIndex = 23;
+            this.button24.Text = "Other Debug";
+            this.button24.UseVisualStyleBackColor = true;
+            this.button24.Click += new System.EventHandler(this.button24_Click);
             // 
             // GLTest
             // 
@@ -383,5 +396,6 @@ namespace GLTest
         private System.Windows.Forms.Button button22;
         private System.Windows.Forms.Button button23;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button button24;
     }
 }
