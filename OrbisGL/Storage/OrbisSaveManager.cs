@@ -2,100 +2,363 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using static OrbisGL.Storage.OrbisSaveDataDialogInterop;
+using static OrbisGL.Storage.OrbisSaveDataIntrop;
 
 namespace OrbisGL.Storage
 {
     public class OrbisSaveManager : IStorageManager<OrbisSaveData>
     {
+        public Action DoEvents = null;
+
         static int UserID;
         static bool Initialized;
-        public unsafe OrbisSaveData Create(string Indentifier = null)
+
+        /// <summary>
+        /// Creates an new save data
+        /// </summary>
+        /// <param name="Confirm">When true, a confirmation dialog is displayed</param>
+        /// <param name="MaxSize">The save storage space in megabytes</param>
+        /// <param name="Indentifier">The save folder name</param>
+        /// <returns></returns>
+        public OrbisSaveData Create(bool Confirm, int MaxSize, string Indentifier = null)
         {
             if (!Initialized)
                 Initialize();
 
             if (Indentifier == null)
             {
-                IntPtr[] Pointers = new IntPtr[0];
+                Indentifier = "SYSTEM";
+            }
+
+            if (Confirm)
+            {
+                bool Overwrite = false;
+                if (Exists(Indentifier, true))
+                    Overwrite = true;
                 
-                var Icon = File.ReadAllBytes(Path.Combine(IO.GetAppBaseDirectory(), "assets", "images", "dvd-logo.png"));
+                var MsgType = Overwrite ? OrbisSaveDataDialogSystemMessageType.OVERWRITE : OrbisSaveDataDialogSystemMessageType.CONFIRM;
                 
-                try
+                if (!ConfirmDialog(Indentifier, OrbisSaveDataDialogType.SAVE, MsgType))
+                    return null;
+
+                if (Overwrite)
+                    Delete(false, Indentifier);
+            }
+
+            var Mount = new OrbisSaveDataMount2()
+            {
+                userId = UserID,
+                dirName = new OrbisSaveDataDirName()
                 {
-                    var Param = new OrbisSaveDataDialogParam()
+                    data = Indentifier
+                },
+                mountMode = OrbisSaveDataMountMode.CREATE_OR_FAIL,
+                blocks = ComputeBlockSize(MaxSize)
+            };
+
+            var Save = MountSave(Indentifier, Mount, out uint Error);
+
+            if (Save == null)
+                ParseError(Indentifier, Error);
+
+            return Save;
+        }
+
+        private bool ConfirmDialog(string Indentifier, OrbisSaveDataDialogType DialogType = OrbisSaveDataDialogType.SAVE, OrbisSaveDataDialogSystemMessageType MessageType = OrbisSaveDataDialogSystemMessageType.CONFIRM)
+        {
+
+            IntPtr[] Pointers = new IntPtr[0];
+            try
+            {
+                var Param = new OrbisSaveDataDialogParam()
+                {
+                    mode = OrbisSaveDataDialogMode.SYSTEM_MSG,
+                    dispType = DialogType,
+                    sysMsgParam = new OrbisSaveDataDialogSystemMessageParam()
                     {
-                        mode = OrbisSaveDataDialogMode.ORBIS_SAVE_DATA_DIALOG_MODE_SYSTEM_MSG,
-                        dispType = OrbisSaveDataDialogType.ORBIS_SAVE_DATA_DIALOG_TYPE_SAVE,
-                        sysMsgParam = new OrbisSaveDataDialogSystemMessageParam()
+                        sysMsgType = MessageType
+                    },
+                    items = new OrbisSaveDataDialogItems()
+                    {
+                        userId = UserID,
+                        dirName = new OrbisSaveDataDirName()
                         {
-                            sysMsgType = OrbisSaveDataDialogSystemMessageType.ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_CONFIRM
+                            data = Indentifier
                         },
-                        items = new OrbisSaveDataDialogItems()
-                        {
-                            userId = UserID,
-                            dirName = new OrbisSaveDataDirName()
-                            {
-                                data = "SYSTEM"
-                            },
-                            dirNameNum = 1,
-                            newItem = new OrbisSaveDataDialogNewItem()
-                            {
-                                iconBuf = Icon,
-                                iconSize = (ulong)Icon.LongLength,
-                                title = "Hello World"
-                            },
-                        }
-                    };
-
-                    Pointers = Param.CopyTo(out IntPtr Addr).ToArray();
-                    
-                    int Rst = sceSaveDataDialogOpen(Addr);
-
-                    if (Rst != 0)
-                        throw new Exception($"Failed to Create the Save Dialog, ERROR: 0x{Rst:X8}");
-
-                    if (sceSaveDataDialogUpdateStatus() != 0)
-                    {
-                        int dbg = 0;
-                        while ((dbg = sceSaveDataDialogUpdateStatus()) != 3)
-                        {
-                            Thread.Sleep(100);
-                        }
+                        dirNameNum = 1
                     }
+                };
 
-                }
-                finally
+                Pointers = Param.CopyTo(out IntPtr Addr).ToArray();
+
+                var diagResult = ShowSaveDialog(Addr);
+                if (diagResult.result == 1 || diagResult.buttonId == OrbisSaveDataDialogButtonId.NO)
+                    return false;
+            }
+            finally
+            {
+                foreach (var Pointer in Pointers)
                 {
-                    foreach (var Pointer in Pointers)
-                    {
-                        Marshal.FreeHGlobal(Pointer);
-                    }
+                    Marshal.FreeHGlobal(Pointer);
                 }
             }
 
-            throw new NotImplementedException();
+            return true;
         }
 
-        public void Delete(string Indentifier = null)
+        private static OrbisSaveData MountSave(string Indentifier, OrbisSaveDataMount2 Mount, out uint Error)
+        {
+            Error = 0;
+            
+            IntPtr Addr;
+            IntPtr[] Pointers;
+            var Result = new OrbisSaveDataMountResult();
+
+            Addr = IntPtr.Zero;
+            using (var Stream = new MemoryStream())
+            {
+                Pointers = Mount.CopyTo(Stream).ToArray();
+                Addr = Marshal.AllocHGlobal((int)Stream.Length);
+                Marshal.Copy(Stream.ToArray(), 0, Addr, (int)Stream.Length);
+            }
+
+            try
+            {
+                int rst = sceSaveDataMount2(Addr, ref Result);
+
+                Error = unchecked((uint)rst);
+
+                if (rst < 0)
+                    return null;
+                
+                return new OrbisSaveData(Indentifier, Result);
+            }
+            finally
+            {
+                foreach (var Pointer in Pointers)
+                {
+                    Marshal.FreeHGlobal(Pointer);
+                }
+
+                Marshal.FreeHGlobal(Addr);
+            }
+        }
+
+        private static OrbisSaveDataBlocks ComputeBlockSize(int MaxSize)
+        {
+            var Blocks = (ulong)MaxSize / (ulong)OrbisSaveDataBlocks.SIZE;
+            if ((ulong)MaxSize % (ulong)OrbisSaveDataBlocks.SIZE != 0)
+                Blocks++;
+
+            Blocks = Math.Min(Blocks, (ulong)OrbisSaveDataBlocks.MAX);
+            return (OrbisSaveDataBlocks)Math.Max(Blocks, (ulong)OrbisSaveDataBlocks.MIN2);
+        }
+
+        private OrbisSaveDataDialogResult ShowSaveDialog(IntPtr Param)
+        {
+            int Rst = sceSaveDataDialogOpen(Param);
+
+            if (Rst != 0)
+                throw new Exception($"Failed to Create the Save Dialog, ERROR: 0x{Rst:X8}");
+
+            if (sceSaveDataDialogUpdateStatus() != 0)
+            {
+                while (sceSaveDataDialogUpdateStatus() != 3)
+                {
+                    DoEvents?.Invoke();
+                    Thread.Sleep(30);
+                }
+            }
+
+            OrbisSaveDataDialogResult Result = new OrbisSaveDataDialogResult();
+            sceSaveDataDialogGetResult(ref Result);
+            return Result;
+        }
+
+        public bool Delete(bool Confirm, string Indentifier = null)
         {
             if (!Initialized)
                 Initialize();
 
-            throw new NotImplementedException();
+            if (Indentifier == null)
+            {
+                Indentifier = "SYSTEM";
+            }
+
+            if (!Exists(Indentifier, true))
+                return true;
+
+            if (Confirm && !ConfirmDialog(Indentifier, OrbisSaveDataDialogType.DELETE))
+                return false;
+
+            var delParam = new OrbisSaveDataDelete()
+            {
+                userId = UserID,
+                dirName = new OrbisSaveDataDirName()
+                {
+                    data = Indentifier
+                }
+            };
+
+            using (var Stream = new MemoryStream())
+            {
+                var Pointers = delParam.CopyTo(Stream).ToArray();
+
+                var Param = Marshal.AllocHGlobal((int)Stream.Length);
+                
+                Marshal.Copy(Stream.ToArray(), 0, Param, (int)Stream.Length);
+                
+                int rst = sceSaveDataDelete(Param);
+
+                foreach (var Pointer in Pointers)
+                    Marshal.FreeHGlobal(Pointer);
+                
+                Marshal.FreeHGlobal(Param);
+
+                switch (unchecked((uint)rst))
+                {
+                    case 0x809f0003:
+                        throw new Exception("Can't delete: save data is Mounted");
+                    case 0x809f0011:
+                        throw new Exception("Can't delete: Invalid UserID or Inactive User");
+                    case 0x809f0013:
+                        throw new Exception("Can't delete: Save busy for backup");
+                }
+
+                return true;
+            }
         }
 
-        public OrbisSaveData Update(string Indentifier = null)
+        public bool Exists(string Indentifier = null, bool AllowCorrupted = false)
+        {
+            if (!Initialized)
+                Initialize();
+            
+            if (Indentifier == null)
+            {
+                Indentifier = "SYSTEM";
+            }
+            
+            var Mount = new OrbisSaveDataMount2()
+            {
+                userId = UserID,
+                dirName = new OrbisSaveDataDirName()
+                {
+                    data = Indentifier
+                },
+                mountMode = OrbisSaveDataMountMode.RDONLY | OrbisSaveDataMountMode.DESTRUCT_OFF
+            };
+
+            var Save = MountSave(Indentifier, Mount, out uint Error);
+
+            if (Save != null)
+            {
+                Save.Unmount();
+                return true;
+            }
+
+            switch (Error)
+            {
+                case 0x809f0003:
+                    return true;
+                case 0x809f0008:
+                    return false;
+                case 0x809f0013:
+                    return true;
+                case 0x809f000f:
+                    return AllowCorrupted;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Mount the save if exists, if not returns null
+        /// </summary>
+        public OrbisSaveData Update(bool Confirm, string Indentifier = null)
         {
             if (!Initialized)
                 Initialize();
 
-            throw new NotImplementedException();
+            if (Indentifier == null)
+            {
+                Indentifier = "SYSTEM";
+            }
+
+            if (Confirm && !ConfirmDialog(Indentifier))
+            {
+                return null;
+            }
+            
+
+            var Mount = new OrbisSaveDataMount2()
+            {
+                userId = UserID,
+                dirName = new OrbisSaveDataDirName()
+                {
+                    data = Indentifier
+                },
+                mountMode = OrbisSaveDataMountMode.RDWR
+            };
+
+            var Save = MountSave(Indentifier, Mount, out uint Error);
+            
+            if (Save == null)
+                ParseError(Indentifier, Error);
+
+            return Save;
+        }
+
+        public OrbisSaveData Open(string Indentifier = null)
+        {
+            if (!Initialized)
+                Initialize();
+
+            if (Indentifier == null)
+            {
+                Indentifier = "SYSTEM";
+            }
+            
+            var Mount = new OrbisSaveDataMount2()
+            {
+                userId = UserID,
+                dirName = new OrbisSaveDataDirName()
+                {
+                    data = Indentifier
+                },
+                mountMode = OrbisSaveDataMountMode.RDONLY | OrbisSaveDataMountMode.DESTRUCT_OFF
+            };
+
+            var Save = MountSave(Indentifier, Mount, out uint Error);
+            
+            if (Save == null)
+                ParseError(Indentifier, Error);
+
+            return Save;
+        }
+
+        private static void ParseError(string Indentifier, uint Error)
+        {
+            switch (Error)
+            {
+                case 0x809f0003:
+                    throw new Exception($"{Indentifier} Save Data Already Mounted");
+                case 0x809f000a:
+                    throw new Exception("No available space");
+                case 0x809f000c:
+                    throw new Exception("Too many saves mounted");
+                case 0x809f0011:
+                    throw new Exception("Invalid UserID or Inactive User");
+                case 0x809f0013:
+                    throw new Exception("Save busy for backup");
+                case 0x809f000f:
+                    throw new Exception("Corrupted Save Data");
+            }
         }
 
         private static void PreInitialize()
@@ -109,9 +372,9 @@ namespace OrbisGL.Storage
             UserService.Initialize();
             UserService.GetInitialUser(out UserID);
 
-            int a = sceSaveDataInitialize3();
-            int b = sceCommonDialogInitialize();
-            int c = sceSaveDataDialogInitialize();
+            sceSaveDataInitialize3();
+            sceCommonDialogInitialize();
+            sceSaveDataDialogInitialize();
         }
 
         public static void Initialize()
@@ -171,7 +434,17 @@ namespace OrbisGL.Storage
         [DllImport("libSceSaveDataDialog.sprx")]
         private static extern int sceSaveDataDialogUpdateStatus();
 
+
+        [DllImport("libSceSaveDataDialog.sprx")]
+        private static extern int sceSaveDataDialogGetResult(ref OrbisSaveDataDialogResult result);
+
         [DllImport("libSceSaveData.sprx")]
         private static extern int sceSaveDataInitialize3(int initParam = 0);
+
+        [DllImport("libSceSaveData.sprx")]
+        private static extern int sceSaveDataMount2(IntPtr mount, ref OrbisSaveDataMountResult mountResult);
+
+        [DllImport("libSceSaveData.sprx")]
+        private static extern int sceSaveDataDelete(IntPtr del);
     }
 }

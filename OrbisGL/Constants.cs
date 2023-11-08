@@ -1,4 +1,6 @@
-﻿namespace OrbisGL
+﻿using System.Data;
+
+namespace OrbisGL
 {
     public static class Constants
     {
@@ -105,6 +107,11 @@
         public const int ORBIS_SYSTEM_SERVICE_PARAM_ID_LANG = 0x00000001;
 
         public const uint ORBIS_COMMON_DIALOG_MAGIC_NUMBER = 0xC0D1A109;
+
+
+        public const int ORBIS_SAVE_DATA_TITLE_MAXSIZE = 128;
+        public const int ORBIS_SAVE_DATA_SUBTITLE_MAXSIZE = 128;
+        public const int ORBIS_SAVE_DATA_DETAIL_MAXSIZE = 1024;
 
         public const int MaxTouchNum = 2;
         public const int MaxTouchX = 1919;

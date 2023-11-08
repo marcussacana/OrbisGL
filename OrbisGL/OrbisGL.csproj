@@ -177,8 +177,9 @@
     <Compile Include="State.cs" />
     <Compile Include="Storage\IStorageData.cs" />
     <Compile Include="Storage\IStorageManager.cs" />
-    <Compile Include="Storage\NativeStructs.cs" />
+    <Compile Include="Storage\OrbisSaveDataDialogInterop.cs" />
     <Compile Include="Storage\OrbisSaveData.cs" />
+    <Compile Include="Storage\OrbisSaveDataIntrop.cs" />
     <Compile Include="Storage\OrbisSaveManager.cs" />
     <Compile Include="Structs.cs" />
   </ItemGroup>

@@ -15,7 +15,7 @@ namespace OrbisGL.Input
         int CurrentUserID = 0;
         
         MouseButtons CurrentButtons = 0;
-        SceMouseData* CurrentData = null;
+        OrbisMouseData* CurrentData = null;
         const int bulkMouseData = 8;
         
         public void RefreshData(long Tick)
@@ -71,7 +71,7 @@ namespace OrbisGL.Input
             if (sceMouseInit() != Constants.ORBIS_OK)
                 return false;
 
-            var OpenParam = new SceMouseOpenParam();
+            var OpenParam = new OrbisMouseOpenParam();
             OpenParam.behaviorFlag = 0; //Constants.ORBIS_MOUSE_OPEN_PARAM_MERGED;
 
             MouseHandle = sceMouseOpen(CurrentUserID, Constants.ORBIS_MOUSE_PORT_TYPE_STANDARD, 0, OpenParam);
@@ -79,9 +79,9 @@ namespace OrbisGL.Input
             CurrentX = Coordinates2D.Width / 2;
             CurrentY = Coordinates2D.Height / 2;
 
-            var MouseData = new SceMouseData();
-            var pMouseData = Marshal.AllocHGlobal(sizeof(SceMouseData) * bulkMouseData);
-            CurrentData = (SceMouseData*)pMouseData.ToPointer();
+            var MouseData = new OrbisMouseData();
+            var pMouseData = Marshal.AllocHGlobal(sizeof(OrbisMouseData) * bulkMouseData);
+            CurrentData = (OrbisMouseData*)pMouseData.ToPointer();
             for (int i = 0; i < bulkMouseData; i++)
             {
                 CurrentData[i] = MouseData;
@@ -103,13 +103,13 @@ namespace OrbisGL.Input
         static extern int sceMouseClose();
 
         [DllImport("libSceMouse.sprx")]
-        static extern int sceMouseOpen(int UserID, int Type, int Index, SceMouseOpenParam pParam);
+        static extern int sceMouseOpen(int UserID, int Type, int Index, OrbisMouseOpenParam pParam);
 
         [DllImport("libSceMouse.sprx")]
-        static extern int sceMouseRead(int Handle, SceMouseData* pData, int num);
+        static extern int sceMouseRead(int Handle, OrbisMouseData* pData, int num);
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct SceMouseOpenParam
+        struct OrbisMouseOpenParam
         {
             public byte behaviorFlag;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 7)]
@@ -117,7 +117,7 @@ namespace OrbisGL.Input
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct SceMouseData
+        struct OrbisMouseData
         {
             public ulong timestamp;
             public int connected;

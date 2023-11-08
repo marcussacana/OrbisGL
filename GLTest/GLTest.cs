@@ -954,6 +954,7 @@ void main(void) {
         private void button24_Click(object sender, EventArgs e)
         {
 #if DEBUG
+            /*
             var Param = new OrbisSaveDataDialogParam();
 
             Param.baseParam.size = 48;
@@ -977,6 +978,7 @@ void main(void) {
                 var Addr = Param.CopyTo(stream).ToArray();
                 File.WriteAllBytes("rst.dbg", stream.ToArray());
             }
+            */
 #endif
         }
     }

@@ -45,6 +45,19 @@ namespace Orbis.Internals
 #endif
         }
 
+        public static void* AllocString(string String, out int BufferSize)
+        {
+            var Data = Encoding.UTF8.GetBytes(String + "\x0");
+
+            byte* Buffer = (byte*)malloc(Data.Length);
+
+            BufferSize = Data.Length;
+
+            for (int i = 0; i < Data.Length; i++)
+                Buffer[i] = Data[i];
+
+            return Buffer;
+        }
         public static void* AllocString(string String)
         {
             var Data = Encoding.UTF8.GetBytes(String + "\x0");

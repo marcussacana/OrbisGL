@@ -5,7 +5,6 @@ namespace Orbis.Internals
 {
     public unsafe class IO
     {
-
         public static string GetAppBaseDirectory()
         {
             return Kernel.ParseString(GetBaseDirectory());

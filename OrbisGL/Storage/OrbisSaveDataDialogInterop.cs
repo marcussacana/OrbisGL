@@ -7,115 +7,116 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
+using static OrbisGL.Storage.OrbisSaveDataIntrop;
 
 namespace OrbisGL.Storage
 {
-    public static class OrbisSaveDataDialogInterop
+    internal static class OrbisSaveDataDialogInterop
     {
         public const int ORBIS_SAVE_DATA_DIALOG_USER_MSG_MAXSIZE = 256;
 
         public enum OrbisSaveDataDialogMode : int
         {
-            ORBIS_SAVE_DATA_DIALOG_MODE_INVALID = 0,
-            ORBIS_SAVE_DATA_DIALOG_MODE_LIST = 1,
-            ORBIS_SAVE_DATA_DIALOG_MODE_USER_MSG = 2,
-            ORBIS_SAVE_DATA_DIALOG_MODE_SYSTEM_MSG = 3,
-            ORBIS_SAVE_DATA_DIALOG_MODE_ERROR_CODE = 4,
-            ORBIS_SAVE_DATA_DIALOG_MODE_PROGRESS_BAR = 5
+            INVALID = 0,
+            LIST = 1,
+            USER_MSG = 2,
+            SYSTEM_MSG = 3,
+            ERROR_CODE = 4,
+            PROGRESS_BAR = 5
         }
 
         public enum OrbisSaveDataDialogType : int
         {
-            ORBIS_SAVE_DATA_DIALOG_TYPE_INVALID = 0,
-            ORBIS_SAVE_DATA_DIALOG_TYPE_SAVE = 1,
-            ORBIS_SAVE_DATA_DIALOG_TYPE_LOAD = 2,
-            ORBIS_SAVE_DATA_DIALOG_TYPE_DELETE = 3
+            INVALID = 0,
+            SAVE = 1,
+            LOAD = 2,
+            DELETE = 3
         }
 
         public enum OrbisSaveDataDialogFocusPos : int
         {
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_LISTHEAD = 0,
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_LISTTAIL = 1,
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_DATAHEAD = 2,
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_DATATAIL = 3,
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_DATALATEST = 4,
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_DATAOLDEST = 5,
-            ORBIS_SAVE_DATA_DIALOG_FOCUS_POS_DIRNAME = 6
+            LISTHEAD = 0,
+            LISTTAIL = 1,
+            DATAHEAD = 2,
+            DATATAIL = 3,
+            DATALATEST = 4,
+            DATAOLDEST = 5,
+            DIRNAME = 6
         }
 
         public enum OrbisSaveDataDialogSystemMessageType : int
         {
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_INVALID = 0,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_NODATA = 1,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_CONFIRM = 2,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_OVERWRITE = 3,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_NOSPACE = 4,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_PROGRESS = 5,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_FILE_CORRUPTED = 6,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_FINISHED = 7,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_NOSPACE_CONTINUABLE = 8,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_CORRUPTED_AND_DELETE = 10,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_CORRUPTED_AND_CREATE = 11,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_CORRUPTED_AND_RESTORE = 13,
-            ORBIS_SAVE_DATA_DIALOG_SYSMSG_TYPE_TOTAL_SIZE_EXCEEDED = 14
+            INVALID = 0,
+            NODATA = 1,
+            CONFIRM = 2,
+            OVERWRITE = 3,
+            NOSPACE = 4,
+            PROGRESS = 5,
+            CORRUPTED = 6,
+            FINISHED = 7,
+            CONTINUABLE = 8,
+            CORRUPTED_AND_DELETE = 10,
+            CORRUPTED_AND_CREATE = 11,
+            CORRUPTED_AND_RESTORE = 13,
+            TOTAL_SIZE_EXCEEDED = 14
         }
 
         public enum OrbisSaveDataDialogButtonType : int
         {
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_TYPE_OK = 0,
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_TYPE_YESNO = 1,
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_TYPE_NONE = 2,
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_TYPE_OKCANCEL = 3
+            OK = 0,
+            YESNO = 1,
+            NONE = 2,
+            OKCANCEL = 3
         }
 
         public enum OrbisSaveDataDialogButtonId : int
         {
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_ID_INVALID = 0,
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_ID_OK = 1,
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_ID_YES = 1,
-            ORBIS_SAVE_DATA_DIALOG_BUTTON_ID_NO = 2
+            INVALID = 0, 
+            OK = 1,
+            YES = 1,
+            NO = 2
         }
 
         public enum OrbisSaveDataDialogOptionBack : int
         {
-            ORBIS_SAVE_DATA_DIALOG_OPTION_BACK_ENABLE = 0,
-            ORBIS_SAVE_DATA_DIALOG_OPTION_BACK_DISABLE = 1
+            ENABLE = 0,
+            DISABLE = 1
         }
 
         public enum OrbisSaveDataDialogProgressBarType : int
         {
-            ORBIS_SAVE_DATA_DIALOG_PROGRESSBAR_TYPE_PERCENTAGE = 0
+            PERCENTAGE = 0
         }
 
         public enum OrbisSaveDataDialogProgressBarTarget : int
         {
-            ORBIS_SAVE_DATA_DIALOG_PROGRESSBAR_TARGET_BAR_DEFAULT = 0
+            DEFAULT = 0
         }
 
         public enum OrbisSaveDataDialogItemStyle : int 
         {
-            ORBIS_SAVE_DATA_DIALOG_ITEM_STYLE_TITLE_DATESIZE_SUBTITLE = 0,
-            ORBIS_SAVE_DATA_DIALOG_ITEM_STYLE_TITLE_SUBTITLE_DATESIZE = 1,
-            ORBIS_SAVE_DATA_DIALOG_ITEM_STYLE_TITLE_DATESIZE = 2
+            TITLE_DATESIZE_SUBTITLE = 0,
+            TITLE_SUBTITLE_DATESIZE = 1,
+            TITLE_DATESIZE = 2
         }
 
         public enum OrbisSaveDataDialogAnimation : int
         {
-            ORBIS_SAVE_DATA_DIALOG_ANIMATION_ON = 0,
-            ORBIS_SAVE_DATA_DIALOG_ANIMATION_OFF = 1
+            ON = 0,
+            OFF = 1
         }
 
         public enum OrbisSaveDataDialogUserMessageType : int
         {
-            ORBIS_SAVE_DATA_DIALOG_USERMSG_TYPE_NORMAL = 0,
-            ORBIS_SAVE_DATA_DIALOG_USERMSG_TYPE_ERROR = 1
+            NORMAL = 0,
+            ERROR = 1
         }
 
         public enum OrbisSaveDataDialogProgressSystemMessageType : int
         {
-            ORBIS_SAVE_DATA_DIALOG_PRGRESS_SYSMSG_TYPE_INVALID = 0,
-            ORBIS_SAVE_DATA_DIALOG_PRGRESS_SYSMSG_TYPE_PROGRESS = 1,
-            ORBIS_SAVE_DATA_DIALOG_PRGRESS_SYSMSG_TYPE_RESTORE = 2
+            INVALID = 0,
+            PROGRESS = 1,
+            RESTORE = 2
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -141,23 +142,6 @@ namespace OrbisGL.Storage
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] reserved;
         }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
-        public struct OrbisSaveDataTitleId
-        {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
-            public string data;
-            
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
-            public byte[] padding;
-        }
-        
-        [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
-        public struct OrbisSaveDataDirName {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-            public string data;
-        }
-        
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct OrbisSaveDataDialogItems
         {
@@ -193,7 +177,10 @@ namespace OrbisGL.Storage
         {
             public OrbisSaveDataDialogButtonType buttonType;
             public OrbisSaveDataDialogUserMessageType msgType;
-            public IntPtr msg;
+            
+            [MarshalAs(UnmanagedType.LPStr)]
+            public string msg;
+            
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] reserved;
         }
@@ -246,10 +233,16 @@ namespace OrbisGL.Storage
         public struct OrbisSaveDataDialogResult
         {
             public OrbisSaveDataDialogMode mode;
+            
+            /// <summary>
+            /// 0 = OK, 1 = Cancel
+            /// </summary>
             public int result;
+            
             public OrbisSaveDataDialogButtonId buttonId;
-            public IntPtr dirName;
-            public IntPtr param;
+            public int unused;
+            public OrbisSaveDataDirName dirName;
+            public OrbisSaveDataParam param;
             public IntPtr userData;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] reserved;
