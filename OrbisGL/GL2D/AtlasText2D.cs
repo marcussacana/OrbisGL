@@ -22,11 +22,29 @@ namespace OrbisGL.GL2D
         readonly Dictionary<char, string> FrameMap;
 
 
+        private bool _StaticText;
+
         /// <summary>
         /// When set to true, the <see cref="AtlasText2D"/> will be optimized for text that doesn't change frequently. This prioritizes rendering speed. 
         /// When set to false, it optimizes for text that requires frequent updates, prioritizing text update speed.
         /// </summary>
-        public bool StaticText { get; set; } = false;
+        public bool StaticText { get => _StaticText;
+            set
+            {
+                if (_StaticText != value)
+                {
+                    _StaticText = value;
+                    Invalidate();
+                }
+            }
+        }
+
+        private void Invalidate()
+        {
+            var Text = this.Text;
+            this.Text = null;
+            SetText(Text);
+        }
 
         public override byte Opacity { 
             get => base.Opacity;
@@ -98,7 +116,7 @@ namespace OrbisGL.GL2D
             if (A == null)
                 throw new Exception("The `A` Glyph is required for all font atlas");
 
-            if (Text == this.Text && Childs.Any())
+            if ((Text == this.Text && Childs.Any()) || string.IsNullOrWhiteSpace(Text))
                 return;
 
             this.Text = Text;
@@ -301,6 +319,12 @@ namespace OrbisGL.GL2D
                 }
             }
             return null;
+        }
+
+        public override void SetZoom(float Value = 1)
+        {
+            base.SetZoom(Value);
+            Invalidate();
         }
 
         public override void Draw(long Tick)

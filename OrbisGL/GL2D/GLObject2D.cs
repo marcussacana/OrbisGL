@@ -15,6 +15,8 @@ namespace OrbisGL.GL2D
         public int Width { get; set; }
         public int Height { get; set; }
 
+        public Vector2 Size { get => new Vector2(Width, Height); }
+
         public bool InRoot => Parent == null;
         
         public virtual RGBColor Color { get; set; } = RGBColor.White;
