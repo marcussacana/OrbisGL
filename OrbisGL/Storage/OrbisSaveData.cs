@@ -13,11 +13,11 @@ namespace OrbisGL.Storage
     {
         private bool Mounted = true;
         private OrbisSaveDataMountResult Mount;
-
-        internal OrbisSaveData(string name, OrbisSaveDataMountResult mount)
+        internal OrbisSaveData(string name, OrbisSaveDataMountResult mount, bool readOnly)
         {
             Name = name;
             Mount = mount;
+            ReadOnly = readOnly;
 
             if (string.IsNullOrEmpty(mount.mountPoint.data))
                 throw new Exception("Failed to mount the save");
@@ -32,6 +32,8 @@ namespace OrbisGL.Storage
 
         public string Name { get; private set; }
         public string MountedPath { get; private set; }
+        
+        public bool ReadOnly { get; private set; }
 
         public string AbsoluteMountedPath => Path.Combine(Path.GetDirectoryName(IO.GetAppBaseDirectory()), MountedPath.TrimStart('\\', '/'));
 

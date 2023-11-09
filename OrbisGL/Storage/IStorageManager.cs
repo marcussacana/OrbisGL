@@ -2,7 +2,7 @@
 {
     public interface IStorageManager<T> where T : IStorageData
     {
-        T Create(bool Confirm, int MaxSize, string Indentifier);
+        T Create(bool Confirm, string Indentifier);
         bool Delete(bool Confirm, string Indentifier);
         T Update(bool Confirm, string Indentifier);
         T Open(string Indentifier);

@@ -18,14 +18,23 @@ namespace OrbisGL.Storage
         static int UserID;
         static bool Initialized;
 
+        private int MaxSaveSize;
+
+        /// <summary>
+        /// Initialize an Save Manager Instance
+        /// </summary>
+        /// <param name="MaxSaveSize">The max save size in bytes</param>
+        public OrbisSaveManager(int MaxSaveSize)
+        {
+            this.MaxSaveSize = MaxSaveSize;
+        }
+
         /// <summary>
         /// Creates an new save data
         /// </summary>
         /// <param name="Confirm">When true, a confirmation dialog is displayed</param>
-        /// <param name="MaxSize">The save storage space in megabytes</param>
         /// <param name="Indentifier">The save folder name</param>
-        /// <returns></returns>
-        public OrbisSaveData Create(bool Confirm, int MaxSize, string Indentifier = null)
+        public OrbisSaveData Create(bool Confirm,  string Indentifier = null)
         {
             if (!Initialized)
                 Initialize();
@@ -35,20 +44,20 @@ namespace OrbisGL.Storage
                 Indentifier = "SYSTEM";
             }
 
+            bool Overwrite = false;
+            if (Exists(Indentifier, true))
+                Overwrite = true;
+
             if (Confirm)
             {
-                bool Overwrite = false;
-                if (Exists(Indentifier, true))
-                    Overwrite = true;
-                
                 var MsgType = Overwrite ? OrbisSaveDataDialogSystemMessageType.OVERWRITE : OrbisSaveDataDialogSystemMessageType.CONFIRM;
                 
                 if (!ConfirmDialog(Indentifier, OrbisSaveDataDialogType.SAVE, MsgType))
                     return null;
-
-                if (Overwrite)
-                    Delete(false, Indentifier);
             }
+
+            if (Overwrite)
+                Delete(false, Indentifier);
 
             var Mount = new OrbisSaveDataMount2()
             {
@@ -57,8 +66,8 @@ namespace OrbisGL.Storage
                 {
                     data = Indentifier
                 },
-                mountMode = OrbisSaveDataMountMode.CREATE_OR_FAIL,
-                blocks = ComputeBlockSize(MaxSize)
+                mountMode = OrbisSaveDataMountMode.CREATE_OR_FAIL | OrbisSaveDataMountMode.RDWR | OrbisSaveDataMountMode.COPY_ICON,
+                blocks = ComputeBlockSize(MaxSaveSize)
             };
 
             var Save = MountSave(Indentifier, Mount, out uint Error);
@@ -136,7 +145,7 @@ namespace OrbisGL.Storage
                 if (rst < 0)
                     return null;
                 
-                return new OrbisSaveData(Indentifier, Result);
+                return new OrbisSaveData(Indentifier, Result, Mount.mountMode.HasFlag(OrbisSaveDataMountMode.RDONLY));
             }
             finally
             {
@@ -251,7 +260,8 @@ namespace OrbisGL.Storage
                 {
                     data = Indentifier
                 },
-                mountMode = OrbisSaveDataMountMode.RDONLY | OrbisSaveDataMountMode.DESTRUCT_OFF
+                mountMode = OrbisSaveDataMountMode.RDONLY,
+                blocks = ComputeBlockSize(MaxSaveSize)
             };
 
             var Save = MountSave(Indentifier, Mount, out uint Error);
@@ -303,7 +313,8 @@ namespace OrbisGL.Storage
                 {
                     data = Indentifier
                 },
-                mountMode = OrbisSaveDataMountMode.RDWR
+                mountMode = OrbisSaveDataMountMode.RDWR,
+                blocks = ComputeBlockSize(MaxSaveSize)
             };
 
             var Save = MountSave(Indentifier, Mount, out uint Error);
@@ -331,7 +342,8 @@ namespace OrbisGL.Storage
                 {
                     data = Indentifier
                 },
-                mountMode = OrbisSaveDataMountMode.RDONLY | OrbisSaveDataMountMode.DESTRUCT_OFF
+                mountMode = OrbisSaveDataMountMode.RDONLY,
+                blocks = ComputeBlockSize(MaxSaveSize)
             };
 
             var Save = MountSave(Indentifier, Mount, out uint Error);
