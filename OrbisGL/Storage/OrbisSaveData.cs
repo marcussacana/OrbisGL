@@ -71,6 +71,10 @@ namespace OrbisGL.Storage
             if (string.IsNullOrEmpty(Title))
                 throw new ArgumentNullException("title");
 
+#if DEBUG
+            Title += " [DEBUG]";
+#endif
+            
             var ptr = Kernel.AllocString(Title, out int Size);
 
             SetParamData(ptr, Size, OrbisSaveDataParamType.TITLE);

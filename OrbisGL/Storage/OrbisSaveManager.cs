@@ -64,7 +64,11 @@ namespace OrbisGL.Storage
                 userId = UserID,
                 dirName = new OrbisSaveDataDirName()
                 {
+#if DEBUG
+                    data = Indentifier + "@DEBUG"
+#else
                     data = Indentifier
+#endif
                 },
                 mountMode = OrbisSaveDataMountMode.CREATE_OR_FAIL | OrbisSaveDataMountMode.RDWR | OrbisSaveDataMountMode.COPY_ICON,
                 blocks = ComputeBlockSize(MaxSaveSize)
@@ -80,7 +84,6 @@ namespace OrbisGL.Storage
 
         private bool ConfirmDialog(string Indentifier, OrbisSaveDataDialogType DialogType = OrbisSaveDataDialogType.SAVE, OrbisSaveDataDialogSystemMessageType MessageType = OrbisSaveDataDialogSystemMessageType.CONFIRM)
         {
-
             IntPtr[] Pointers = new IntPtr[0];
             try
             {
@@ -97,7 +100,11 @@ namespace OrbisGL.Storage
                         userId = UserID,
                         dirName = new OrbisSaveDataDirName()
                         {
+#if DEBUG
+                            data = Indentifier + "@DEBUG"
+#else
                             data = Indentifier
+#endif
                         },
                         dirNameNum = 1
                     }
@@ -122,6 +129,10 @@ namespace OrbisGL.Storage
 
         private static OrbisSaveData MountSave(string Indentifier, OrbisSaveDataMount2 Mount, out uint Error)
         {
+#if DEBUG
+            Indentifier += "@DEBUG";
+#endif
+
             Error = 0;
             
             IntPtr Addr;
@@ -210,7 +221,11 @@ namespace OrbisGL.Storage
                 userId = UserID,
                 dirName = new OrbisSaveDataDirName()
                 {
+#if DEBUG
+                    data = Indentifier + "@DEBUG"
+#else
                     data = Indentifier
+#endif
                 }
             };
 
@@ -258,7 +273,11 @@ namespace OrbisGL.Storage
                 userId = UserID,
                 dirName = new OrbisSaveDataDirName()
                 {
+#if DEBUG
+                    data = Indentifier + "@DEBUG"
+#else
                     data = Indentifier
+#endif
                 },
                 mountMode = OrbisSaveDataMountMode.RDONLY,
                 blocks = ComputeBlockSize(MaxSaveSize)
@@ -311,7 +330,11 @@ namespace OrbisGL.Storage
                 userId = UserID,
                 dirName = new OrbisSaveDataDirName()
                 {
+#if DEBUG
+                    data = Indentifier + "@DEBUG"
+#else
                     data = Indentifier
+#endif
                 },
                 mountMode = OrbisSaveDataMountMode.RDWR,
                 blocks = ComputeBlockSize(MaxSaveSize)
@@ -340,7 +363,11 @@ namespace OrbisGL.Storage
                 userId = UserID,
                 dirName = new OrbisSaveDataDirName()
                 {
+#if DEBUG
+                    data = Indentifier + "@DEBUG"
+#else
                     data = Indentifier
+#endif
                 },
                 mountMode = OrbisSaveDataMountMode.RDONLY,
                 blocks = ComputeBlockSize(MaxSaveSize)
