@@ -71,7 +71,6 @@ namespace OrbisGL.Audio
             FlushBuffer = false;
             ResetBuffer = false;
             StopPlayer = false;
-            IsRunnning = true;
             SoundThread.Start(PCMBuffer);
         }
 
@@ -92,13 +91,11 @@ namespace OrbisGL.Audio
 
                 if (handle == Constants.ORBIS_AUDIO_OUT_ERROR_PORT_FULL)
                 {
-                    IsRunnning = false;
                     throw new Exception("Too Many Audio Ports Open");
                 }
                 
                 if (handle < 0)
                 {
-                    IsRunnning = false;
                     throw new Exception("Failed to Initialize the Audio Driver Instance");
                 }
 
@@ -113,6 +110,8 @@ namespace OrbisGL.Audio
                 var fWavBufferB = new byte[Grain * (int)OrbisAudioOutChannel.MAX];
 
                 bool CurrentBuffer = false;
+                
+                IsRunnning = true;
 
                 fixed (byte* pWavBufferA = WavBufferA, pWavBufferB = WavBufferB)
                 fixed (byte* pfWaveBufferA = fWavBufferA, pfWaveBufferB = fWavBufferB)

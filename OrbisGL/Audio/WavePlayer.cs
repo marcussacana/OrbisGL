@@ -10,6 +10,7 @@ namespace OrbisGL.Audio
     {
         bool _ThreadStarted = false;
         bool Stopped = true;
+        bool FullStop = false;
         bool Paused;
         BinaryReader Stream;
         IAudioOut Driver;
@@ -169,20 +170,22 @@ namespace OrbisGL.Audio
 
             if (Stream == null)
                 return;
+
+            if (FullStop)
+            {
+                FullStop = true;
+                PlayerThread = null;
+            }
             
             if (PlayerThread == null)
             {
-                while (Driver.IsRunnning)
-                {
-                    Driver.Stop();
-                    Kernel.sceKernelUsleep(1000);
-                }
+                WaitFullStop();
                 
                 _ThreadStarted = false;
                 PlayerThread = new Thread(Player);
                 PlayerThread.Name = "WavePlayer";
                 PlayerThread.Start();
-            }
+            } 
 
             while (!_ThreadStarted)
             {
@@ -195,9 +198,23 @@ namespace OrbisGL.Audio
 
         public void Restart()
         {
+            FullStop = true;
+            Driver.Stop();
             Driver.Reset();
             SkipTo(TimeSpan.Zero);
             Resume();
+        }
+
+        private void WaitFullStop()
+        {
+            while (Driver.IsRunnning)
+            {
+                Driver.Stop();
+                Kernel.sceKernelUsleep(1000);
+            }
+            
+           //while (PlayerThread != null)
+           //     Kernel.sceKernelUsleep(1000);
         }
 
         private void Player()
@@ -217,6 +234,10 @@ namespace OrbisGL.Audio
                 byte[] DataBuffer = new byte[BlockSize];
 
                 Stopped = false;
+
+                //wait driver thread initializes
+                while (!Stopped && !Driver.IsRunnning)
+                    Thread.Sleep(10);
 
                 _ThreadStarted = true;
 
