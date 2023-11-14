@@ -73,6 +73,7 @@
     <Compile Include="Audio\IAudioOut.cs" />
     <Compile Include="Audio\IAudioPlayer.cs" />
     <Compile Include="Audio\VorbisPlayer.cs" />
+    <Compile Include="Audio\BasePlayer.cs" />
     <Compile Include="Audio\WavePlayer.cs" />
     <Compile Include="Controls\Button.cs" />
     <Compile Include="Controls\Checkbox.cs" />

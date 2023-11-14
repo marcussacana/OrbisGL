@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using Orbis.Internals;
 
 namespace OrbisGL.Audio
 {
-    public class WavePlayer : IAudioPlayer
+    public class WavePlayer : BasePlayer
     {
-        bool _ThreadStarted = false;
-        bool Stopped = true;
-        bool FullStop = false;
-        bool Paused;
         BinaryReader Stream;
-        IAudioOut Driver;
 
         WAVRIFFHEADER Header;
         FORMATCHUNK Format;
@@ -24,35 +17,24 @@ namespace OrbisGL.Audio
         long DataOffset;
         long DataSize;
 
-        Thread PlayerThread = null;
-
-        public event EventHandler OnTrackEnd;
-        public bool Loop { get; set; }
-
-        public TimeSpan? CurrentTime { get; private set; }
-
-        public bool Playing => !Paused && Stream != null && !Stopped;
         private int BlockSize => Format.WBlockAlign * (int)Format.DSamplesPerSec;
 
-        public void Close()
-        {
-            Stopped = true;
-        }
+        protected override string ThreadName => "WavePlayer";
 
-        public void Dispose()
+        public override void Open(Stream File)
         {
-            Close();
-            Driver?.Dispose();
-            Stream?.Dispose();
-        }
-
-        public void Open(Stream File)
-        {
-            Stopped = true;
             File.Position = 0;
             Stream = new BinaryReader(File);
             ParseHeader();
+            base.Open(File);
         }
+
+        public override void Dispose()
+        {
+            Stream?.Dispose();
+            base.Dispose();
+        }
+
 
         void ParseHeader()
         {
@@ -136,6 +118,16 @@ namespace OrbisGL.Audio
             Stream.BaseStream.Position = NextChunkPos;
         }
 
+        public override void SkipTo(TimeSpan Duration)
+        {
+            long targetBytePosition = (long)(Format.DAvgBytesPerSec * Duration.TotalSeconds);
+
+            // Align the targetBytePosition to the nearest block boundary
+            targetBytePosition = (targetBytePosition / BlockSize) * BlockSize;
+
+            Stream.BaseStream.Position = targetBytePosition + DataOffset;
+        }
+
         private LISTSUBCHUNK ReadSubChunk()
         {
             CHUNKINFO<LISTSUBCHUNK> Info = ReadChunkInfo();
@@ -157,147 +149,9 @@ namespace OrbisGL.Audio
             return Info;
         }
 
-        public void Pause()
+        protected override void PlayerEntrypoint()
         {
-            Paused = true;
-        }
-        
-
-        public void Resume()
-        {
-            if (Driver == null)
-                throw new Exception("Audio Output Driver Not Set");
-
-            if (Stream == null)
-                return;
-
-            if (FullStop)
-            {
-                FullStop = true;
-                PlayerThread = null;
-            }
-            
-            if (PlayerThread == null)
-            {
-                WaitFullStop();
-                
-                _ThreadStarted = false;
-                PlayerThread = new Thread(Player);
-                PlayerThread.Name = "WavePlayer";
-                PlayerThread.Start();
-            } 
-
-            while (!_ThreadStarted)
-            {
-                Kernel.sceKernelUsleep(1000);
-            }
-            
-            Driver.Resume();
-            Paused = false;
-        }
-
-        public void Restart()
-        {
-            FullStop = true;
-            Driver.Stop();
-            Driver.Reset();
-            SkipTo(TimeSpan.Zero);
-            Resume();
-        }
-
-        private void WaitFullStop()
-        {
-            while (Driver.IsRunnning)
-            {
-                Driver.Stop();
-                Kernel.sceKernelUsleep(1000);
-            }
-            
-           //while (PlayerThread != null)
-           //     Kernel.sceKernelUsleep(1000);
-        }
-
-        private void Player()
-        {
-            using (var Buffer = new RingBuffer(BlockSize*3))
-            {
-                Stream.BaseStream.Position = DataOffset;
-                var EndPos = DataOffset + DataSize;
-
-                const int Grain = 512;
-        
-                Driver.SetProprieties(Format.WChannels, Grain, Format.DSamplesPerSec);
-                Driver.Play(Buffer);
-
-                CurrentTime = TimeSpan.Zero;
-
-                byte[] DataBuffer = new byte[BlockSize];
-
-                Stopped = false;
-
-                //wait driver thread initializes
-                while (!Stopped && !Driver.IsRunnning)
-                    Thread.Sleep(10);
-
-                _ThreadStarted = true;
-
-                try
-                {
-                    while (Stream.BaseStream != null && Stream.BaseStream.Position < EndPos && !Stopped && Driver.IsRunnning)
-                    {
-                        int Readed = Stream.Read(DataBuffer, 0, DataBuffer.Length);
-                        
-                        while (Driver.IsRunnning && (Driver.ToBeFlushed || Buffer.CantWrite(Readed)))
-                        {
-                            Thread.Sleep(10);
-                        }
-                        
-                        Buffer.Write(DataBuffer, 0, Readed);
-
-                        CurrentTime += TimeSpan.FromSeconds(1);
-
-                        if (Loop && Stream.BaseStream.Position >= EndPos)
-                        {
-                            Stream.BaseStream.Position = DataOffset;
-                            CurrentTime = TimeSpan.Zero;
-                        }
-
-                        while ((Paused || Buffer.Length >= BlockSize * 2) && !Stopped && Driver.IsRunnning)
-                            Thread.Sleep(100);
-                    }
-
-                    if (!Stopped)
-                        OnTrackEnd?.Invoke(this, EventArgs.Empty);
-                }
-                finally
-                {
-                    //Wait the Audio Output Driver read the reaming buffered data
-                    while (Buffer.Length > 0 && Driver.IsRunnning)
-                    {
-                        Driver.Flush();
-                        Thread.Sleep(100);
-                    }
-                    
-                    Stopped = true;
-                    PlayerThread = null;
-                    Driver?.Stop();
-                }
-            }
-        }
-
-        public void SetAudioDriver(IAudioOut Driver)
-        {
-            this.Driver = Driver;
-        }
-
-        public void SkipTo(TimeSpan Duration)
-        {
-            long targetBytePosition = (long)(Format.DAvgBytesPerSec * Duration.TotalSeconds);
-
-            // Align the targetBytePosition to the nearest block boundary
-            targetBytePosition = (targetBytePosition / BlockSize) * BlockSize;
-
-            Stream.BaseStream.Position = targetBytePosition + DataOffset;
+            Player(Stream.BaseStream, BlockSize, Format.WChannels, Format.DSamplesPerSec, DataOffset, DataSize);
         }
 
         struct ID
