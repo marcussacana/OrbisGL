@@ -118,6 +118,10 @@ namespace OrbisGL.Audio
         /// <param name="DataSize">The sample data size in the given stream</param>
         protected void Player(Stream Input, int BufferSize, int Channels, uint SamplesPerSec, long BeginOffset, long DataSize)
         {
+            var CurrentThread = Thread.CurrentThread;
+            
+            Func<bool> PlayerAlive = () => CurrentThread.ManagedThreadId == PlayerThread?.ManagedThreadId;
+            
             using (var Buffer = new RingBuffer(BufferSize*3))
             {
                 Input.Position = BeginOffset;
@@ -142,7 +146,7 @@ namespace OrbisGL.Audio
 
                 try
                 {
-                    while (Input != null && Input.Position < EndPos && !Stopped && Driver.IsRunnning)
+                    while (Input != null && Input.Position < EndPos && !Stopped && Driver.IsRunnning && PlayerAlive())
                     {
                         int Readed = Input.Read(DataBuffer, 0, DataBuffer.Length);
                         
@@ -165,7 +169,7 @@ namespace OrbisGL.Audio
                             Thread.Sleep(100);
                     }
 
-                    if (!Stopped)
+                    if (!Stopped && PlayerAlive())
                         OnTrackEnd?.Invoke(this, EventArgs.Empty);
                 }
                 catch (ObjectDisposedException ex) {}
@@ -177,10 +181,13 @@ namespace OrbisGL.Audio
                         Driver.Flush();
                         Thread.Sleep(100);
                     }
-                    
-                    Stopped = true;
-                    PlayerThread = null;
-                    Driver?.Stop();
+
+                    if (PlayerAlive())
+                    {
+                        Stopped = true;
+                        PlayerThread = null;
+                        Driver?.Stop();
+                    }
                 }
             }
         }
