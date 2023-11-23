@@ -113,9 +113,6 @@ namespace OrbisGL.GL2D
 
         public override void RefreshVertex()
         {
-
-            //TODO: Clone 6,8,4 points but with Half Local UV
-
             if (TextureTile00 == null)
                 return;
 

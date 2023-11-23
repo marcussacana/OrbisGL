@@ -137,7 +137,7 @@ namespace OrbisGL.GL2D
             if (Text == this.Text)
                 return;
 
-            //TODO: Create a reusable font glyph texture table instead use libFreetype to redraw everything
+            //TODO: Implement a font atlas generator for AtlasText2D based on libFreetype
 
             this.Text = Text;
 
