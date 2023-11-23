@@ -329,6 +329,8 @@ namespace OrbisGL.GL2D
 
         public override void Draw(long Tick)
         {
+            if (Text == null) return;
+
             if (!StaticText)
             {
                 var GlyphZoom = Coordinates2D.ParseZoomFactor(Zoom);
