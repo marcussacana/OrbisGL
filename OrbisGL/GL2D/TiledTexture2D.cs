@@ -89,7 +89,7 @@ namespace OrbisGL.GL2D
 
         public TiledTexture2D()
         {
-            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTextureTiled"), ResLoader.GetResource("FragmentTextureTiled"));
+            var hProgram = new ProgramHandler(ResLoader.GetResource("VertexOffsetTextureTiled"), ResLoader.GetResource("FragmentTextureTiled"));
             Program = new GLProgram(hProgram);
 
             Texture00UniformLocation = GLES20.GetUniformLocation(hProgram, "Texture00");

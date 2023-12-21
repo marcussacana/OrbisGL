@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using SharpGLES;
 
@@ -12,8 +11,8 @@ namespace OrbisGL.GL
 
         public int VerticeSize => MaxAttribOffset;
         
-        public readonly int Handler;
-        public GLProgram(int hProgram)
+        public readonly ProgramHandler Handler;
+        public GLProgram(ProgramHandler hProgram)
         {
             Handler = hProgram;
         }
@@ -214,7 +213,7 @@ namespace OrbisGL.GL
 
         public void Dispose()
         {
-            GLES20.DeleteProgram(Handler);
+            Handler.Dispose();
         }
     }
 }

@@ -29,7 +29,7 @@ namespace OrbisGL.GL2D
 
         public Line2D(bool CloseLines)
         {
-            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentColorUV"));
+            var hProgram = new ProgramHandler(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentColorUV"));
             Program = new GLProgram(hProgram);
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);

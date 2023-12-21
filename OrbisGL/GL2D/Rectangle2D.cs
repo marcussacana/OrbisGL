@@ -37,7 +37,7 @@ namespace OrbisGL.GL2D
             this.Width = Width;
             this.Height = Height;
 
-            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffset"), CustomFragmentShader ?? ResLoader.GetResource("FragmentColor"));
+            var hProgram = new ProgramHandler(ResLoader.GetResource("VertexOffset"), CustomFragmentShader ?? ResLoader.GetResource("FragmentColor"));
             Program = new GLProgram(hProgram);
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);

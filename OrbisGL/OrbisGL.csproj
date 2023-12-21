@@ -98,6 +98,7 @@
     <Compile Include="Controls\Radiobutton.cs" />
     <Compile Include="Controls\TextBox.cs" />
     <Compile Include="Controls\VerticalScrollBar.cs" />
+    <Compile Include="ByteArrayComparer.cs" />
     <Compile Include="Debug\Inspector.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Constants.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="GL\Line.cs" />
     <Compile Include="GL\Object.cs" />
     <Compile Include="GL\Program.cs" />
+    <Compile Include="GL\ProgramHandler.cs" />
     <Compile Include="GL\Rectangle.cs" />
     <Compile Include="GL\RGBColor.cs" />
     <Compile Include="GL\Texture.cs" />

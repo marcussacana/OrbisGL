@@ -980,5 +980,12 @@ void main(void) {
             */
 #endif
         }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+#if DEBUG
+            OrbisGL.GL.ProgramHandler.LogShaderCacheStatus();
+#endif
+        }
     }
 }

@@ -251,6 +251,11 @@ namespace OrbisGL.GL
             
             GLES20.UseProgram(Program.Handler);
 
+#if DEBUG
+            if (!GLES20.IsProgram(Program.Handler))
+                throw new Exception("Invalid Shader Program Handler");
+#endif
+
             UpdateUniforms(Tick);
 
             BuildBuffers();
@@ -286,7 +291,9 @@ namespace OrbisGL.GL
             if (GLIndexBuffer != 0)
             {
                 GLES20.BindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, GLIndexBuffer);
-                
+
+                int error = GLES20.GetLastError();
+
                 GLES20.DrawElements(RenderMode, IndexBuffer.Count, GLES20.GL_UNSIGNED_BYTE, IntPtr.Zero);
             }
             else

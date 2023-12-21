@@ -11,6 +11,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
 using System.Text;
 using Orbis.Internals;
+using OrbisGL.GL;
 using SharpGLES;
 
 namespace OrbisGL
@@ -340,9 +341,11 @@ namespace OrbisGL
         }
 
 #endif
+
         public static int GetProgram(string VertexSource, string FragmentSource)
         {
-            GLES20.GetLastError(); //Clear Any Old Error
+            GLES20.GetLastError(); //Clear Any Old Error      
+
 
             int Vertex = GetShader(GLES20.GL_VERTEX_SHADER, VertexSource);
             int Fragment = GetShader(GLES20.GL_FRAGMENT_SHADER, FragmentSource);
@@ -352,6 +355,9 @@ namespace OrbisGL
 
         static int GetProgram(int hVertex, int hFragment)
         {
+            
+            var inf = GLES20.IsProgram(3);
+
             GLES20.GetLastError(); //Clear Any Old Error
 
             int Program = GLES20.CreateProgram();

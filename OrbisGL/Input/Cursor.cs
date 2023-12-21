@@ -24,7 +24,7 @@ namespace OrbisGL.Input
 
         private Cursor(bool Contour)
         {
-            var hProg = Shader.GetProgram(ResLoader.GetResource("VertexOffset"), ResLoader.GetResource("FragmentColor"));
+            var hProg = new ProgramHandler(ResLoader.GetResource("VertexOffset"), ResLoader.GetResource("FragmentColor"));
             Program = new GLProgram(hProg);
 
             Program.AddBufferAttribute("Position", AttributeType.Float, AttributeSize.Vector3);

@@ -48,7 +48,7 @@ namespace OrbisGL.GL2D
         {
             this.FontSize = Font.CurrentSize;
 
-            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentFont"));
+            var hProgram = new ProgramHandler(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentFont"));
             Program = new GLProgram(hProgram);
 
             TextureUniformLocation = GLES20.GetUniformLocation(hProgram, "Texture");

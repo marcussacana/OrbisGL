@@ -95,7 +95,7 @@ namespace OrbisGL.GL2D
         /// </summary>
         public Texture2D()
         {
-            var hProgram = Shader.GetProgram(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentTexture"));
+            var hProgram = new ProgramHandler(ResLoader.GetResource("VertexOffsetTexture"), ResLoader.GetResource("FragmentTexture"));
             Program = new GLProgram(hProgram);
 
             TextureUniformLocation = GLES20.GetUniformLocation(hProgram, "Texture");
