@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpGLES", "SharpGLES\Shar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLTest", "GLTest\GLTest.csproj", "{836BC80E-8DFE-49A8-A411-B30FF5A8482F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BCnEncoder", "BCnEncoder.NET\BCnEnc.Net\BCnEncoder.csproj", "{5850AECD-66C3-4330-BF67-5C2761035037}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Win|Any CPU = Debug_Win|Any CPU
@@ -71,18 +69,6 @@ Global
 		{836BC80E-8DFE-49A8-A411-B30FF5A8482F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{836BC80E-8DFE-49A8-A411-B30FF5A8482F}.Release|x64.ActiveCfg = Release|Any CPU
 		{836BC80E-8DFE-49A8-A411-B30FF5A8482F}.Release|x64.Build.0 = Release|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug_Win|Any CPU.ActiveCfg = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug_Win|Any CPU.Build.0 = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug_Win|x64.ActiveCfg = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug_Win|x64.Build.0 = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Debug|x64.Build.0 = Debug|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Release|x64.ActiveCfg = Release|Any CPU
-		{5850AECD-66C3-4330-BF67-5C2761035037}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
