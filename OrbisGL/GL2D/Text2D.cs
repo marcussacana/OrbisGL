@@ -95,7 +95,7 @@ namespace OrbisGL.GL2D
                     return CurrentFont;
                 }
 
-                throw new Exception("Failed to Load the Font");
+                throw new Exception($"Failed to Load the Font: {Path.GetFileName(FontPath)}");
             }
 
 
