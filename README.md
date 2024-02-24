@@ -135,6 +135,7 @@ namespace Orbis
     }
 }
 ```
+- Build it as PKG, see the instructions [clicking here](https://github.com/marcussacana/OrbisGL/wiki/Quick-Start)
 
 ## OrbisGL Execution Workflow
 
