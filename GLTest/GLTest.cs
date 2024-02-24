@@ -19,7 +19,6 @@ using TextBox = OrbisGL.Controls.TextBox;
 using Orbis.Game;
 using System.Drawing;
 using BCnEncoder.Encoder;
-using ICSharpCode.SharpZipLib.Zip;
 using System.Diagnostics;
 using Orbis.Scene;
 using System.Windows.Markup;
@@ -277,7 +276,6 @@ void main(void) {
                             pPixels[x] = ABGR;
                         }
 
-
                         Span<byte> bytes = new Span<byte>(Locker.Scan0.ToPointer(), SizeInBytes);
                         var DDS = Encoder.EncodeToDds(bytes.ToArray(), Output.Width, Output.Height);
                         using (var Stream = File.Create(OutImg))
@@ -414,7 +412,7 @@ void main(void) {
 
             var ImgExts = new string[] { ".png", ".jpg", ".bmp" };
             var SndExts = new string[] { ".mp3", ".acc" };
-
+            /*
             using (var Stream = File.Create("Assets.zip"))
             {
                 var Archive = ZipFile.Create(Stream);
@@ -458,6 +456,9 @@ void main(void) {
             }
 
             MessageBox.Show("Assets Archive Created", "GLTest");
+            */
+
+            throw new NotImplementedException();
         }
 
         private void button5_Click(object sender, EventArgs e)
