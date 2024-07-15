@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Orbis;
-using OrbisGL;
+﻿using OrbisGL;
 using OrbisGL.Controls;
 using OrbisGL.Debug;
 using OrbisGL.GL;
@@ -10,20 +8,13 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Windows.Forms;
-using static OrbisGL.GL2D.Coordinates2D;
 using Button = OrbisGL.Controls.Button;
 using Panel = OrbisGL.Controls.Panel;
 using TextBox = OrbisGL.Controls.TextBox;
-using Orbis.Game;
 using System.Drawing;
 using BCnEncoder.Encoder;
 using System.Diagnostics;
-using Orbis.Scene;
-using System.Windows.Markup;
-using Orbis.Interfaces;
-using System.Runtime.InteropServices;
 
 namespace GLTest
 {
@@ -905,11 +896,6 @@ void main(void) {
 #endif
         }
 
-#if !ORBIS
-        ILoadable SM;
-#endif
-
-        CharacterAnim Anim;
         TiledSpriteAtlas2D Sprite;
         private void button23_Click(object sender, EventArgs e)
         {
@@ -923,14 +909,6 @@ void main(void) {
             GLControl.SetSize(Size.Width, Size.Height);
 
             panel1.Visible = false;
-            
-            SM = new IntroScene();
-
-            SM.Load(i =>
-            {
-                if (SM.Loaded)
-                    GLControl.GLApplication.AddObject(SM);
-            });
             
             /*
             var XML = Util.GetXML(Character.GirlfriendAssets);
