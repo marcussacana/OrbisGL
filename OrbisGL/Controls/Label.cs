@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace OrbisGL.Controls
 {
-    internal class Label : Control
+    public class Label : Control
     {
         RichText2D Text2D;
 
