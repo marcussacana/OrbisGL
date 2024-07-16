@@ -45,6 +45,7 @@ namespace OrbisGL.GL2D
             return Lines.ToArray();
         }
 
+        public void SetLine(Line Line) => SetLines(new Line[] { Line });
         public void SetLines(Line[] Lines)
         {
             this.Lines.Clear();
