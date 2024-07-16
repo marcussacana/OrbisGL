@@ -42,8 +42,27 @@ namespace OrbisGL.GL
 
             if (ProgramCache.TryGetValue(ProgramHash, out hProgram))
             {
-                ReferenceCount[hProgram]++;
-                return;
+                if (GLES20.IsProgram(hProgram))
+                {
+                    GLES20.GetLastError();
+
+                    GLES20.GetProgramiv(hProgram, GLES20.GL_LINK_STATUS, out int LS);
+                    var LastError = GLES20.GetError();
+
+                    if (LastError == 0 && LS == GLES20.GL_TRUE)
+                    {
+                        var err = GLES20.GetProgramInfoLog(hProgram);
+                        ReferenceCount[hProgram]++;
+                        return;
+                    }
+                }
+
+#if DEBUG && ORBIS
+                Kernel.Log("Invalid Cached Program Deleted");
+#endif
+
+                ProgramCache.Remove(ProgramHash);
+                ReferenceCount.Remove(hProgram);
             } 
 
             hProgram = Shader.GetProgram(Vertex, Fragment);
@@ -78,8 +97,27 @@ namespace OrbisGL.GL
 
             if (ProgramCache.TryGetValue(ProgramHash, out hProgram))
             {
-                ReferenceCount[hProgram]++;
-                return;
+                if (GLES20.IsProgram(hProgram))
+                {
+                    GLES20.GetLastError();
+
+                    GLES20.GetProgramiv(hProgram, GLES20.GL_LINK_STATUS, out int LS);
+                    var LastError = GLES20.GetError();
+
+                    if (LastError == 0 && LS == GLES20.GL_TRUE)
+                    {
+                        var err = GLES20.GetProgramInfoLog(hProgram);
+                        ReferenceCount[hProgram]++;
+                        return;
+                    }
+                }
+
+#if DEBUG && ORBIS
+                Kernel.Log("Invalid Cached Program Deleted");
+#endif
+
+                ProgramCache.Remove(ProgramHash);
+                ReferenceCount.Remove(hProgram);
             }
 
             hProgram = Shader.GetProgram(Vertex, Fragment);
