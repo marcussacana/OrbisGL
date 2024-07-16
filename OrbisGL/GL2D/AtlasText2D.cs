@@ -102,6 +102,27 @@ namespace OrbisGL.GL2D
             } 
         }
 
+        /// <summary>
+        /// Generate a font atlas for the indicated characters and load it.
+        /// <para>It is recommended to export the generated atlas and use the pre-rendered constructor instead of this constructor.</para>
+        /// </summary>
+        /// <param name="Font">The TrueType font to be used</param>
+        /// <param name="FontSize">The font size to create the atlas</param>
+        /// <param name="Characters">A list with all characters that should be included in the atlas, if null EXTENDED_ASCII_TABLE will be used</param>
+        public AtlasText2D(FontFaceHandler Font, int FontSize, string Characters = null)
+        {
+            if (Characters == null)
+                Characters = Constants.EXTENDED_ASCII_TABLE;
+
+            Font.SetFontSize(FontSize);
+            Texture = SpriteAtlas2D.LoadFromFreeType(Font, Characters, out FrameMap);
+        }
+
+        /// <summary>
+        /// Loads a pre-rendered font atlas
+        /// </summary>
+        /// <param name="Atlas">The Font Atlas</param>
+        /// <param name="FrameMap">A map of the character that each frame represents</param>
         public AtlasText2D(SpriteAtlas2D Atlas, Dictionary<char, string> FrameMap)
         {
             Texture = Atlas;
@@ -110,7 +131,6 @@ namespace OrbisGL.GL2D
 
         public void SetText(string Text)
         {
-
             var A = QueryGlyph('A');
 
             if (A == null)
@@ -312,7 +332,7 @@ namespace OrbisGL.GL2D
         {
             if (FrameMap.TryGetValue(Char, out string Name))
             {
-                var Sprite = Texture.Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == Name.ToLowerInvariant().Trim());
+                IEnumerable<SpriteInfo> Sprite = Texture.Sprites.Where(x => x.Name == Name);
                 if (Sprite.Any())
                 {
                     return Sprite.First();

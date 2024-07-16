@@ -1,10 +1,10 @@
-﻿using OrbisGL.GL;
+﻿using OrbisGL.FreeTypeLib;
+using OrbisGL.GL;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.Remoting;
 using System.Xml;
 
 namespace OrbisGL.GL2D
@@ -76,6 +76,13 @@ namespace OrbisGL.GL2D
         public override RGBColor Color { get => SpriteView.Color; set => SpriteView.Color = value; }
         public override byte Opacity { get => SpriteView.Opacity; set => SpriteView.Opacity = value; }
 
+
+        /// <summary>
+        /// Change the behavior of <see cref="SetActiveAnimation"/> by defining whether the search for frames by name should be case sensitive or not. 
+        /// <para>Default value: False</para>
+        /// </summary>
+        public bool FrameCaseSensitive { get; set; }
+
         protected bool AllowTexDisposal = true;
 
         public event EventHandler OnAnimationEnd;
@@ -88,6 +95,17 @@ namespace OrbisGL.GL2D
             AddChild(SpriteView);
             SpriteView.OnFrameChange += (sender, e) => SpriteView.Position = -FrameOffsets[e];
             SpriteView.OnAnimationEnd += (sender, e) => OnAnimationEnd?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Creates and load a SpriteAtlas2D Instance
+        /// </summary>
+        /// <param name="Document">An Adobe Animate texture atlas info</param>
+        /// <param name="SpriteSheet">An texture compatible with the given texture atlas info</param>
+        /// <param name="CaseSensitive">Determine if the sprite name will be case sensitive (Default False)</param>
+        public SpriteAtlas2D(XmlDocument Document, Texture SpriteSheet, bool CaseSensitive) : this(Document, SpriteSheet)
+        {
+            FrameCaseSensitive = CaseSensitive;
         }
 
         /// <summary>
@@ -138,7 +156,13 @@ namespace OrbisGL.GL2D
             if (Name == CurrentSprite)
                 return true;
 
-            var Animation = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == Name.ToLowerInvariant().Trim());
+            IEnumerable<SpriteInfo> Animation = null;
+
+            if (FrameCaseSensitive)
+                Animation = Sprites.Where(x => x.Name == Name);
+            else
+                Animation = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == Name.ToLowerInvariant().Trim());
+
             if (!Animation.Any())
                 return false;
 
@@ -218,7 +242,10 @@ namespace OrbisGL.GL2D
                 Sprites = new SpriteInfo[0];
 
             //Remove old animation if have one
-            Sprites = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() != Animation.ToLowerInvariant().Trim()).ToArray();
+            if (FrameCaseSensitive)
+                Sprites = Sprites.Where(x => x.Name != Animation).ToArray();
+            else
+                Sprites = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() != Animation.ToLowerInvariant().Trim()).ToArray();
 
 
             if (FrameOffset == null || FrameOffset.Length == 0)
@@ -261,7 +288,13 @@ namespace OrbisGL.GL2D
         /// <exception cref="KeyNotFoundException">The given OriginAnimation name does not matches with any animation loaded</exception>
         public void CreateAnimationByIndex(string OriginAnimation, string NewAnimation, bool DeleteOldAnimation, params int[] FrameIndex)
         {
-            var OriSprite = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == OriginAnimation.ToLowerInvariant().Trim());
+            IEnumerable<SpriteInfo> OriSprite = null;
+            
+            if (FrameCaseSensitive)
+                Sprites.Where(x => x.Name == OriginAnimation);
+            else
+                Sprites.Where(x => x.Name.ToLowerInvariant().Trim() == OriginAnimation.ToLowerInvariant().Trim());
+
             if (!OriSprite.Any())
                 throw new KeyNotFoundException(OriginAnimation);
 
@@ -281,8 +314,13 @@ namespace OrbisGL.GL2D
             };
 
             if (DeleteOldAnimation)
-                Sprites = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() != OriginAnimation.ToLowerInvariant().Trim()).ToArray();
+            {
+                if (FrameCaseSensitive)
+                    Sprites = Sprites.Where(x => x.Name != OriginAnimation).ToArray();
+                else
+                    Sprites = Sprites.Where(x => x.Name.ToLowerInvariant().Trim() != OriginAnimation.ToLowerInvariant().Trim()).ToArray();
 
+            }
             Sprites = Sprites.Concat(new SpriteInfo[] { NewSprite }).ToArray();
         }
 
@@ -479,12 +517,13 @@ namespace OrbisGL.GL2D
 
             var Clone = new SpriteAtlas2D()
             {
+                FrameCaseSensitive = FrameCaseSensitive,
                 FrameOffsets = FrameOffsets,
                 Sprites = Sprites,
                 Texture = Texture,
                 AllowTexDisposal = AllowDisposal,
                 Width = Width,
-                Height = Height
+                Height = Height,
             };
 
             if (!AllowDisposal)
@@ -511,7 +550,7 @@ namespace OrbisGL.GL2D
                 return null;
 
             string NumberSufix = string.Empty;
-            while (Name.Length > 0 && char.IsNumber(Name.Last()))
+            while (Name.Length > 1 && char.IsNumber(Name.Last()))
             {
                 NumberSufix = Name.Last() + NumberSufix;
                 Name = Name.Substring(0, Name.Length - 1);
@@ -558,6 +597,72 @@ namespace OrbisGL.GL2D
             Texture?.Dispose();
             SpriteView.Dispose();
             base.Dispose();
+        }
+
+        public static void CreateFromFreeType(FontFaceHandler Font, string Characters, string OutTextureName, out byte[] TextureData, out int TextureWidth, out int TextureHeight, out XmlDocument Atlas, out Dictionary<char, string> FrameMap)
+        {
+            //The A character is required
+            if (!Characters.Contains("A"))
+                Characters += "A";
+
+            FreeType.MeasureText(Characters, Font, out TextureWidth, out TextureHeight, out GlyphInfo[] Glyphs);
+
+            TextureData = new byte[TextureWidth * TextureHeight * 4];
+
+            FreeType.RenderText(TextureData, TextureWidth, TextureHeight, Characters, Font, RGBColor.White);
+
+            Atlas = new XmlDocument();
+
+            XmlAttribute ImagePathAttribute = Atlas.CreateAttribute("imagePath");
+            ImagePathAttribute.Value = OutTextureName;
+
+            XmlNode TextureAtlas = Atlas.CreateNode(XmlNodeType.Element, "TextureAtlas", string.Empty);
+            TextureAtlas.Attributes.Append(ImagePathAttribute);
+
+            XmlComment Comment = Atlas.CreateComment("Created With OrbisGL");
+
+            TextureAtlas.AppendChild(Comment);
+
+            FrameMap = new Dictionary<char, string>();
+
+            foreach (var Glyph in Glyphs)
+            {
+                XmlAttribute NameAttrib = Atlas.CreateAttribute("name");
+                XmlAttribute XAttrib = Atlas.CreateAttribute("x");
+                XmlAttribute YAttrib = Atlas.CreateAttribute("y");
+                XmlAttribute WidthAttrib = Atlas.CreateAttribute("width");
+                XmlAttribute HeightAttrib = Atlas.CreateAttribute("height");
+
+                NameAttrib.Value = $"{Glyph.Char}000";
+
+                FrameMap[Glyph.Char] = $"{Glyph.Char}";
+
+                XAttrib.Value = $"{(int)Glyph.Area.X}";
+                YAttrib.Value = $"{(int)Glyph.Area.Y}";
+                WidthAttrib.Value = $"{(int)Glyph.Area.Width}";
+                HeightAttrib.Value = $"{(int)Glyph.Area.Height}";
+
+                var SubTexture = Atlas.CreateNode(XmlNodeType.Element, "SubTexture", string.Empty);
+                SubTexture.Attributes.Append(NameAttrib);
+                SubTexture.Attributes.Append(XAttrib);
+                SubTexture.Attributes.Append(YAttrib);
+                SubTexture.Attributes.Append(WidthAttrib);
+                SubTexture.Attributes.Append(HeightAttrib);
+
+                TextureAtlas.AppendChild(SubTexture);
+            }
+
+            Atlas.AppendChild(TextureAtlas);
+        }
+
+        public static SpriteAtlas2D LoadFromFreeType(FontFaceHandler Font, string Characters,out Dictionary<char, string> FrameMap)
+        {
+            CreateFromFreeType(Font, Characters, "texture.raw", out byte[] Data, out int Width, out int Height, out XmlDocument Atlas, out FrameMap);
+
+            Texture Texture = new Texture(true);
+            Texture.SetData(Width, Height, Data, PixelFormat.RGBA, true);
+
+            return new SpriteAtlas2D(Atlas, Texture, true);
         }
     }
 }

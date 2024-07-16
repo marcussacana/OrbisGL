@@ -17,7 +17,12 @@ namespace OrbisGL.GL2D
         bool VertexInitialized = false;
 
         public GlyphInfo[] GlyphsInfo { get; private set; } = null;
+
+        /// <summary>
+        /// Gets the current Text, to change it use the <see cref="SetText(string)"/>
+        /// </summary>
         public string Text { get; private set; } = null;
+
         public FontFaceHandler Font { get; set; }
 
         int BackColorUniformLocation = -1;
@@ -38,12 +43,32 @@ namespace OrbisGL.GL2D
             }
         }
 
+        /// <summary>
+        /// Creates a text object that directly draws with FreeType.
+        /// <para>If all the glyphs to be rendered are known, use <see cref="AtlasText2D"/> instead.</para>
+        /// </summary>
+        /// <param name="FontPath">The TrueType font filename to be used</param>
+        /// <param name="FontSize">The font Size to be used</param>
+
         public Text2D(int FontSize, string FontPath) : this(GetFont(FontPath, FontSize, out _)) { }
+
+        /// <summary>
+        /// Creates a text object that directly draws with FreeType.
+        /// <para>If all the glyphs to be rendered are known, use <see cref="AtlasText2D"/> instead.</para>
+        /// </summary>
+        /// <param name="Font">The TrueType font to be used</param>
+        /// <param name="FontSize">The font Size to be used</param>
         public Text2D(FontFaceHandler Font, int FontSize) : this(Font)
         {
             Font.SetFontSize(FontSize);
             this.FontSize = FontSize;
         }
+
+        /// <summary>
+        /// Creates a text object that directly draws with FreeType.
+        /// <para>If all the glyphs to be rendered are known, use <see cref="AtlasText2D"/> instead.</para>
+        /// </summary>
+        /// <param name="Font">The TrueType font to be used</param>
         public Text2D(FontFaceHandler Font)
         {
             this.FontSize = Font.CurrentSize;
@@ -136,8 +161,6 @@ namespace OrbisGL.GL2D
         {
             if (Text == this.Text)
                 return;
-
-            //TODO: Implement a font atlas generator for AtlasText2D based on libFreetype
 
             this.Text = Text;
 
