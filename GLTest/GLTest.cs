@@ -909,7 +909,7 @@ void main(void) {
             GLControl.SetSize(Size.Width, Size.Height);
 
             panel1.Visible = false;
-            
+
             /*
             var XML = Util.GetXML(Character.GirlfriendAssets);
 
@@ -927,6 +927,8 @@ void main(void) {
 
             GLControl.GLApplication.AddObject(Sprite);
             */
+
+            GLControl.GLApplication.AddObject(new Orbis.Controls.MainMenu());
 #endif
         }
         private void button24_Click(object sender, EventArgs e)
