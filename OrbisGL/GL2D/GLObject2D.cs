@@ -18,7 +18,7 @@ namespace OrbisGL.GL2D
         public Vector2 Size { get => new Vector2(Width, Height); }
 
         public bool InRoot => Parent == null;
-        
+
         public virtual RGBColor Color { get; set; } = RGBColor.White;
 
         /// <summary>
@@ -138,7 +138,15 @@ namespace OrbisGL.GL2D
         protected Vector2 AbsoluteZoomPosition => Parent?.AbsoluteZoomPosition + ZoomPosition ?? ZoomPosition;
 
 
-        private Vector2 PixelOffset = new Vector2(XOffset, YOffset);
+        private Vector2? _PixelOffsetOverrider = null;
+        private Vector2 PixelOffset {
+            get {
+                return _PixelOffsetOverrider ?? new Vector2(XOffset, YOffset);
+            }
+            set {
+                _PixelOffsetOverrider = value;
+            }
+        }
 
 
         int OffsetUniform = int.MinValue;
