@@ -119,6 +119,16 @@ namespace OrbisGL.GL2D
         }
 
         /// <summary>
+        /// Creates a new AtlasText2D Sharing the same texture memory from other instance
+        /// </summary>
+        /// <param name="Source">The source instance to share the texture</param>
+        public AtlasText2D(AtlasText2D Source)
+        {
+            Texture = Source.Texture;
+            FrameMap = Source.FrameMap;
+        }
+
+        /// <summary>
         /// Loads a pre-rendered font atlas
         /// </summary>
         /// <param name="Atlas">The Font Atlas</param>
