@@ -46,6 +46,12 @@ namespace GLTest
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new MethodInvoker(() => OnPaint(e)));
+                return;
+            }
+
             GLApplication?.DrawOnce();
             GLApplication?.SwapBuffers();
         }
@@ -54,6 +60,11 @@ namespace GLTest
         {
             base.OnHandleCreated(e);
 
+            Invoke(new MethodInvoker(InitializeOrbisGL));
+        }
+
+        private void InitializeOrbisGL()
+        {
             GLApplication = new Application(Width, Height, 30, Handle);
 
             GLApplication.MouseDriver = new GenericMouse(() =>
@@ -79,8 +90,6 @@ namespace GLTest
 
             GLApplication.KeyboardDriver = Keyboard = new DesktopKeyboard();
             GLApplication.EnableKeyboard();
-
-            
         }
 
         const int WM_KEYDOWN = 0x100;
