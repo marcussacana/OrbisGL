@@ -1,11 +1,15 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Configuration;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.SqlServer.Server;
+using OrbisGL.Images;
 using SharpGLES;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -103,6 +107,11 @@ namespace OrbisGL.GL
 
             fixed (byte* pData = Data)
             {
+                if (Format == PixelFormat.RGB)
+                    GLES20.PixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 1);
+                else
+                    GLES20.PixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 4);
+
                 GLES20.TexImage2D(TextureType, 0, (int)Format, Width, Height, 0, (int)Format, GLES20.GL_UNSIGNED_BYTE, new IntPtr(pData));
                 
                 int Error = GLES20.GetError();
@@ -181,11 +190,61 @@ namespace OrbisGL.GL
             }
         }
 
-        [Obsolete("Slow, use SetDDS instead", false)]
+        public static async Task<IDecodedImage> DecodeImageAsync(byte[] Data, PixelFormat TextureFormat)
+        {
+            IDecodedImage Img;
+
+            using (var Stream = new MemoryStream(Data))
+            {
+                switch (TextureFormat)
+                {
+                    case PixelFormat.RGB:
+                        Img = new DecodedImage<Rgb24>(await Image.LoadAsync<Rgb24>(Stream));
+                        break;
+                    case PixelFormat.RGBA:
+                        Img = new DecodedImage<Argb32>(await Image.LoadAsync<Argb32>(Stream));
+                        break;
+                    default:
+                        throw new Exception("Unexpected Pixel Format");
+                }
+            }
+
+            Img.ConvertToRGBA();
+
+            return Img;
+        }
+
+        public void SetImage(IDecodedImage Img, bool EnableFiltering)
+        {
+            byte[] Buffer = new byte[Img.PixelDataLength];
+            Img.CopyAsRGBA(Buffer);
+
+            Width = Img.Width;
+            Height = Img.Height;
+
+            PixelFormat Format;
+
+            switch (Img.BitsPerPixel)
+            {
+                case 24:
+                    Format = PixelFormat.RGB;
+                    break;
+                case 32:
+                    Format = PixelFormat.RGBA;
+                    break;
+                default:
+                    throw new NotSupportedException("Image Pixel Format must be RGB24 or RGBA32");
+            }
+
+            SetData(Width, Height, Buffer, Format, EnableFiltering);
+        }
+
+        [Obsolete("Slow, use SetDDS or SetImageAsync instead", false)]
         public void SetImage(byte[] Data, PixelFormat TextureFormat, bool EnableFiltering)
         {
             int Width, Height;
             byte[] Buffer;
+
             switch (TextureFormat)
             {
                 case PixelFormat.RGB:
@@ -262,8 +321,8 @@ namespace OrbisGL.GL
 
                 Reader.BaseStream.Position = DataOffset;
 
-                byte[] PixelData = new byte[Reader.BaseStream.Length - DataOffset];
-                Reader.Read(PixelData, 0, PixelData.Length);
+                byte[] Data = new byte[Reader.BaseStream.Length - DataOffset];
+                Reader.Read(Data, 0, Data.Length);
 
                 if (Compressed) 
                 {
@@ -281,7 +340,7 @@ namespace OrbisGL.GL
                             throw new NotSupportedException("DDS Compression Format Not Supported");
                     }
 
-                    SetDataCompressed(Width, Height, PixelData, Format, EnableFiltering);
+                    SetDataCompressed(Width, Height, Data, Format, EnableFiltering);
                 }
                 else 
                 {
@@ -291,107 +350,16 @@ namespace OrbisGL.GL
                     bool HasAlpha = PFFLAGS.HasFlag(DDS_FORMAT_FLAGS.ALPHA);
 
                     if (RGBBitCount == 24 && !HasAlpha)
-                        ConvertPixelData(PixelData, RBitMask, GBitMask, BBitMask, 0, RGBBitCount);
+                        PixelData.Convert(Data, RBitMask, GBitMask, BBitMask, 0, RGBBitCount);
                     else if (RGBBitCount == 32 && HasAlpha)
-                        ConvertPixelData(PixelData, RBitMask, GBitMask, BBitMask, ABitMask, RGBBitCount);
+                        PixelData.Convert(Data, RBitMask, GBitMask, BBitMask, ABitMask, RGBBitCount);
                     else
                         throw new NotSupportedException("The given DDS file RGB pixel format isn't supported");
 
-                    SetData(Width, Height, PixelData, HasAlpha ? PixelFormat.RGBA : PixelFormat.RGB, EnableFiltering);
+                    SetData(Width, Height, Data, HasAlpha ? PixelFormat.RGBA : PixelFormat.RGB, EnableFiltering);
                 }
             }
         }
-        private unsafe void ConvertPixelData(byte[] Data, uint RMask, uint GMask, uint BMask, uint AMask, uint BitPerPixel)
-        {
-            //TODO: TEST THIS SHIT
-
-            uint PixelSize = BitPerPixel / 8;
-
-            int RMove = 0, GMove = 0, BMove = 0, AMove = 0;
-            bool RLeft = false, GLeft = false;
-
-            switch (RMask)
-            {
-                case 0x00FF0000:
-                    break;
-                case 0x0000FF00:
-                    RMove = 8;
-                    RLeft = true;
-                    break;
-                case 0x000000FF:
-                    RMove = 16;
-                    RLeft = true;
-                    break;
-                case 0xFF000000:
-                    RMove = 8;
-                    break;
-            }
-
-            switch (GMask)
-            {
-                case 0x0000FF00:
-                    break;
-                case 0x00FF0000:
-                    GMove = 8;
-                    break;
-                case 0x000000FF:
-                    GMove = 8;
-                    GLeft = true;
-                    break;
-                case 0xFF000000:
-                    GMove = 16;
-                    break;
-            }
-
-            switch (BMask)
-            {
-                case 0x000000FF:
-                    break;
-                case 0x00FF0000:
-                    GMove = 16;
-                    break;
-                case 0x0000FF00:
-                    GMove = 8;
-                    break;
-                case 0xFF000000:
-                    GMove = 24;
-                    break;
-            }
-
-            switch (AMask)
-            {
-                case 0xFF000000:
-                    break;
-                case 0x00FF0000:
-                    AMove = 8;
-                    break;
-                case 0x0000FF00:
-                    AMove = 16;
-                    break;
-                case 0x000000FF:
-                    AMove = 24;
-                    break;
-            }
-
-            if (RMove != 0 || GMove != 0 || BMove != 0)
-            {
-                fixed (byte* pPixel = Data)
-                {
-                    for (uint i = 0; i < Data.Length; i += PixelSize)
-                    {
-                        uint Pixel = *(uint*)(pPixel + i);
-
-                        uint NewR = (RLeft ? ((Pixel & RMask) << RMove) : ((Pixel & RMask) >> RMove));
-                        uint NewG = (GLeft ? ((Pixel & GMask) << GMove) : ((Pixel & GMask) >> GMove));
-                        uint NewB = (Pixel & BMask) >> GMove;
-                        uint NewA = (Pixel & AMask) << AMove;
-
-                        *(uint*)(pPixel + i) = NewR | NewG | NewB | NewA;
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Select the oldest texture slot, activate this texture and bind it
         /// </summary>
