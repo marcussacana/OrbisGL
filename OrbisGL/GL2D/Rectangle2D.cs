@@ -12,6 +12,9 @@ namespace OrbisGL.GL2D
         float _Rotate = 0f;
         private Rectangle rectangle;
 
+        /// <summary>
+        /// Number in Degrees to rotate the object
+        /// </summary>
         public float Rotate
         {
             get => _Rotate;

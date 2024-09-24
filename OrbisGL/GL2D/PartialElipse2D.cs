@@ -1,6 +1,7 @@
 ﻿using OrbisGL.GL;
 using SharpGLES;
 using System;
+using System.Numerics;
 using static OrbisGL.GL2D.Coordinates2D;
 
 namespace OrbisGL.GL2D
@@ -29,6 +30,38 @@ namespace OrbisGL.GL2D
         /// Whe true the <see cref="Thickness"/> is ignored, same effect of set <see cref="Thickness"/> to 1.0
         /// </summary>
         public bool Fill { get; private set; }
+
+
+        float _BorderDistance = 0f;
+
+        /// <summary>
+        /// A value from 0 to 1 to modify the circle distance from the object border
+        /// </summary>
+        public float BorderDistance 
+        {
+            get => _BorderDistance; 
+            set { 
+                _BorderDistance = Math.Max(Math.Min(value, 1), 0);
+                RefreshVertex();
+            } 
+        }
+
+
+        float _Rotate = 0f;
+
+        /// <summary>
+        /// Number in Degrees to rotate the object
+        /// <para>if possible use <see cref="StartAngle"/> and <see cref="EndAngle"/> for better performance</para>
+        /// </summary>
+        public float Rotate
+        {
+            get => _Rotate;
+            set
+            {
+                _Rotate = value;
+                RefreshVertex();
+            }
+        }
 
         public PartialElipse2D(int Width, int Height, bool Fill)
         {
@@ -59,17 +92,32 @@ namespace OrbisGL.GL2D
             //   |            |
             //   2 ---------- 3
 
-            AddArray(XToPoint(0, ZoomMaxWidth), YToPoint(0, ZoomMaxHeight), -1);//0
-            AddArray(0, 0);
+            var PointA = new Vector2(0, 0);
+            var PointB = new Vector2(Width, 0);
+            var PointC = new Vector2(0, Height);
+            var PointD = new Vector2(Width, Height);
 
-            AddArray(XToPoint(Width, ZoomMaxWidth), YToPoint(0, ZoomMaxHeight), -1);//1
-            AddArray(1, 0);
+            var Center = PointD / 2f;
 
-            AddArray(XToPoint(0, ZoomMaxWidth), YToPoint(Height, ZoomMaxHeight), -1);//2
-            AddArray(0, 1);
+            PointA = RotatePoint(PointA, Center, Rotate);
+            PointB = RotatePoint(PointB, Center, Rotate);
+            PointC = RotatePoint(PointC, Center, Rotate);
+            PointD = RotatePoint(PointD, Center, Rotate);
 
-            AddArray(XToPoint(Width, ZoomMaxWidth), YToPoint(Height, ZoomMaxHeight), -1);//3
-            AddArray(1, 1);
+            var MinUV = 0 - BorderDistance;
+            var MaxUV = 1 + BorderDistance;
+
+            AddArray(XToPoint(PointA.X, ZoomMaxWidth), YToPoint(PointA.Y, ZoomMaxHeight), -1);//0
+            AddArray(MinUV, MinUV);
+
+            AddArray(XToPoint(PointB.X, ZoomMaxWidth), YToPoint(PointB.Y, ZoomMaxHeight), -1);//1
+            AddArray(MaxUV, MinUV);
+
+            AddArray(XToPoint(PointC.X, ZoomMaxWidth), YToPoint(PointC.Y, ZoomMaxHeight), -1);//2
+            AddArray(MinUV, MaxUV);
+
+            AddArray(XToPoint(PointD.X, ZoomMaxWidth), YToPoint(PointD.Y, ZoomMaxHeight), -1);//3
+            AddArray(MaxUV, MaxUV);
 
             AddIndex(0, 1, 2, 1, 2, 3);
 
