@@ -48,12 +48,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Memory.4.5.4\lib\netstandard1.1\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +81,7 @@
     <Compile Include="Controls\VerticalScrollBar.cs" />
     <Compile Include="ByteArrayComparer.cs" />
     <Compile Include="Debug\Inspector.cs" />
+    <Compile Include="Images\DecodedImage.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Extensions.cs" />
@@ -137,6 +132,8 @@
     <Compile Include="GL\RGBColor.cs" />
     <Compile Include="GL\Texture.cs" />
     <Compile Include="GL\Application.cs" />
+    <Compile Include="Images\IImage.cs" />
+    <Compile Include="Images\PixelDataConverter.cs" />
     <Compile Include="Input\Cursor.cs" />
     <Compile Include="Input\Dualshock\Gamepad.cs" />
     <Compile Include="Input\Dualshock\GamepadListener.cs" />
