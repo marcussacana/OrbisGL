@@ -43,7 +43,7 @@ namespace OrbisGL
             int hShader = GLES20.CreateShader(Type);
 
             if (hShader == 0)
-                throw new Exception("Failed to Create the Shader");
+                throw new Exception("Failed to Create the Shader, out of the initial thread?");
 
             GLES20.ShaderSource(hShader, Source);
 
