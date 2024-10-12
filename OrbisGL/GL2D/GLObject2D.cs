@@ -17,6 +17,8 @@ namespace OrbisGL.GL2D
 
         public Vector2 Size { get => new Vector2(Width, Height); }
 
+        public Vector2 ZoomSize { get => new Vector2(ZoomWidth, ZoomHeight); }
+
         public bool InRoot => Parent == null;
 
         public virtual RGBColor Color { get; set; } = RGBColor.White;
@@ -201,9 +203,9 @@ namespace OrbisGL.GL2D
         private Rectangle VisibleRectUV = Vector4.Zero;
 
         public void SetVisibleRectangle(float X, float Y, int Width, int Height) => SetVisibleRectangle(new Rectangle(X, Y, Width, Height));
-        public virtual void SetVisibleRectangle(Rectangle Parent)
+        public virtual void SetVisibleRectangle(Rectangle Area)
         {
-            if (Parent.IsEmpty())
+            if (Area.IsEmpty())
             {
                 InvisibleRect = true;
                 return;
@@ -211,15 +213,17 @@ namespace OrbisGL.GL2D
 
             InvisibleRect = false;
 
-            float MinU = GetU(Parent.X, Width);
-            float MaxU = GetU(Parent.Width, Width);
+            var UVRect = new Rectangle(Area.X, Area.Y, Area.Width, Area.Height);
 
-            float MinV = GetV(Parent.Y, Height);
-            float MaxV = GetV(Parent.Height, Height);
+            float MinU = GetU(UVRect.X, Width);
+            float MaxU = GetU(UVRect.Width, Width);
+
+            float MinV = GetV(UVRect.Y, Height);
+            float MaxV = GetV(UVRect.Height, Height);
 
             VisibleRectUV = new Vector4(MinU, MinV, MaxU, MaxV);
 
-            SetChildrenVisibleRectangle(Parent);
+            SetChildrenVisibleRectangle(Area);
         }
 
         public virtual void ClearVisibleRectangle()
@@ -233,12 +237,19 @@ namespace OrbisGL.GL2D
         {
             VisibleRectangle = Area;
 
-            var AbsArea = Area;
-            AbsArea.Position += AbsolutePosition;
+            var AbsArea = new Rectangle(Area.X, Area.Y, Area.Width, Area.Height);
+
+            AbsArea.Position += AbsoluteZoomPosition;
 
             foreach (var Child in Childs)
             {
-                var AbsChildArea = new Rectangle(Child.AbsolutePosition.X, Child.AbsolutePosition.Y, Child.Width, Child.Height);
+                Rectangle AbsChildArea;
+
+                if (Child.Zoom != 1)
+                    AbsChildArea = new Rectangle(Child.AbsoluteZoomPosition.X, Child.AbsoluteZoomPosition.Y, Child.ZoomWidth, Child.ZoomHeight);
+                else
+                    AbsChildArea = new Rectangle(Child.AbsolutePosition.X, Child.AbsolutePosition.Y, Child.Width, Child.Height);
+
                 var Bounds = Rectangle.GetChildBounds(AbsArea, AbsChildArea);
 
                 Child.SetVisibleRectangle(Bounds);
@@ -351,6 +362,22 @@ namespace OrbisGL.GL2D
             
             if (Parent != null)
                 Parent.RemoveChild(this);
+        }
+
+        internal Vector2 ProcessZoomFactor(Vector2 Vector, bool ApplyZoom)
+        {
+            if (ApplyZoom)
+            {
+                Vector.X = PointToX(XToPoint(Vector.X, Coordinates2D.Width), ZoomMaxWidth);
+                Vector.Y = PointToY(YToPoint(Vector.Y, Coordinates2D.Height), ZoomMaxHeight);
+            }
+            else
+            {
+                Vector.X = PointToX(XToPoint(Vector.X, ZoomMaxWidth), Coordinates2D.Width);
+                Vector.Y = PointToY(YToPoint(Vector.Y, ZoomMaxHeight), Coordinates2D.Height);
+            }
+
+            return Vector;
         }
     }
 }

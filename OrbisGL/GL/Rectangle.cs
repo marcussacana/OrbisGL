@@ -9,7 +9,7 @@ namespace OrbisGL.GL
     {
         public override bool Equals(object obj)
         {
-            if (obj is Rectangle Rect) 
+            if (obj is Rectangle Rect)
             {
                 return Position == Rect.Position && Size == Rect.Size;
             }
@@ -97,33 +97,21 @@ namespace OrbisGL.GL
         /// Get an rectangle relative to the <paramref name="InnerRect"/> with bounds limited by <paramref name="OutterRect"/>
         /// </summary>
         /// <param name="OutterRect">An Absolute Rectangle representing the bounds to be applied</param>
-        /// <param name="InnerRect">An Absolute Rectangle representing the inner rectangle be limited</param>
+        /// <param name="InnerRect">An Absolute Rectangle representing the inner rectangle to be limited</param>
         public static Rectangle GetChildBounds(Rectangle OutterRect, Rectangle InnerRect)
         {
-            if (InnerRect.Intersect(OutterRect).IsEmpty())
+            // Calcula a interseção entre os dois retângulos
+            var Intersection = Rectangle.Intersect(OutterRect, InnerRect);
+
+            // Se não houver interseção, retorna um retângulo vazio
+            if (Intersection.IsEmpty())
                 return Rectangle.Empty;
 
-            var Position = new Vector2(InnerRect.X, InnerRect.Y);
-            var Size = new Vector2(InnerRect.Width, InnerRect.Height);
+            // Ajusta a posição para que seja relativa ao `InnerRect`
+            Intersection.X -= InnerRect.X;
+            Intersection.Y -= InnerRect.Y;
 
-            if (InnerRect.Left < OutterRect.Left)
-                InnerRect.Left = OutterRect.Left;
-
-            if (InnerRect.Right > OutterRect.Right)
-                InnerRect.Right = OutterRect.Right;
-
-            if (InnerRect.Top < OutterRect.Top)
-                InnerRect.Top = OutterRect.Top;
-
-            if (InnerRect.Bottom > OutterRect.Bottom)
-                InnerRect.Bottom = OutterRect.Bottom;
-
-            InnerRect.X -= Position.X;
-            InnerRect.Y -= Position.Y;
-            InnerRect.Width = Math.Min(InnerRect.Width, Size.X);
-            InnerRect.Height = Math.Min(InnerRect.Height, Size.Y);
-
-            return InnerRect;
+            return Intersection;
         }
 
         internal bool IsEmpty()
@@ -137,7 +125,9 @@ namespace OrbisGL.GL
         public float Height { get => Vector.W; set => Vector.W = value; }
 
 
-        public float Top { get => Vector.Y; 
+        public float Top
+        {
+            get => Vector.Y;
             set
             {
                 float DeltaY = value - Vector.Y;
@@ -146,7 +136,9 @@ namespace OrbisGL.GL
             }
         }
 
-        public float Left { get => Vector.X;
+        public float Left
+        {
+            get => Vector.X;
             set
             {
                 float DeltaX = value - Vector.X;

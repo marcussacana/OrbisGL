@@ -81,6 +81,7 @@ namespace OrbisGL.Controls
         /// </summary>
         public void SetAbsoluteVisibleArea(Rectangle Rectangle)
         {
+            GLObject.Position = AbsolutePosition;
             SetVisibleArea(Rectangle.GetChildBounds(Rectangle, AbsoluteRectangle));
         }
 

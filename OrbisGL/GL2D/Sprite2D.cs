@@ -23,6 +23,8 @@ namespace OrbisGL.GL2D
 
         int _FrameDelay;
 
+        private Rectangle? CurFrameRect = null;
+
         /// <summary>
         /// Sets an delay in miliseconds for advance the sprite in the next frame
         /// automatically, where 0 means disabled
@@ -52,13 +54,45 @@ namespace OrbisGL.GL2D
             base.AddChild(Content);
         }
 
-        public override void SetVisibleRectangle(Rectangle Parent)
+        private void InternalSetVisibleRectangle(Rectangle Area)
         {
-            Target.Position = -Parent.Position;
-            Width = (int)Parent.Width;
-            Height = (int)Parent.Height;
+            CurFrameRect = Area;
+            Target.Position = -Area.Position;
+            Width = (int)Area.Width;
+            Height = (int)Area.Height;
+            Target.SetVisibleRectangle(Area);
+        }
 
-            Target.SetVisibleRectangle(Parent);
+        public override void SetVisibleRectangle(Rectangle Area)
+        {
+            if (CurFrameRect.HasValue)
+            {
+                var Frame = CurFrameRect.Value;
+
+                if (Zoom != 1)
+                {
+                    Area.Position = ProcessZoomFactor(Area.Position, true);
+                    Area.Size = ProcessZoomFactor(Area.Size, true);
+                }
+
+                var AbsFrameArea = new Rectangle(Frame.X + Area.X, Frame.Y + Area.Y, Area.Width, Area.Height);
+
+                var FrameCutArea = Rectangle.GetChildBounds(Frame, AbsFrameArea);
+
+                FrameCutArea.X += Frame.X + Area.X;
+                FrameCutArea.Y += Frame.Y + Area.Y;
+
+                Target.Position = -Frame.Position;
+                Target.SetVisibleRectangle(FrameCutArea);
+            }
+            else
+            {
+                Target.Position = -Area.Position;
+                Width = (int)Area.Width;
+                Height = (int)Area.Height;
+
+                Target.SetVisibleRectangle(Area);
+            }
         }
 
         public override void ClearVisibleRectangle()
@@ -66,6 +100,7 @@ namespace OrbisGL.GL2D
             Target.Position = Vector2.Zero;
             Width = Target.Width;
             Height = Target.Height;
+            CurFrameRect = null;
             base.ClearVisibleRectangle();
         }
 
@@ -168,7 +203,7 @@ namespace OrbisGL.GL2D
 
             var DrawFrame = CurrentFrame;
 
-            SetVisibleRectangle(Frames[CurrentFrame]);
+            InternalSetVisibleRectangle(Frames[CurrentFrame]);
             CurrentFrame++;
 
             if (CurrentFrame >= Frames.Length)

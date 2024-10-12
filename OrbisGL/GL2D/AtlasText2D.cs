@@ -7,6 +7,9 @@ using System.Numerics;
 
 namespace OrbisGL.GL2D
 {
+    /// <summary>
+    /// A 2D Text Object with rendering based on atlas texture
+    /// </summary>
     public class AtlasText2D : GLObject2D
     {
         SpriteAtlas2D Texture;
@@ -193,11 +196,11 @@ namespace OrbisGL.GL2D
                         GlyphSprite.Color = Color;
                         GlyphSprite.Negative = Negative;
                         GlyphSprite.Opacity = Opacity;
-                        GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
                         var DeltaLineBase = LineBase - Glyph.Area.Height;
                         GlyphSprite.Position = new Vector2(X, Y + DeltaLineBase);
                         GlyphSprite.SetZoom(Zoom);
-                        AddChild(GlyphSprite);
+						GlyphSprite.SetActiveAnimation(FrameMap[Text[i]]);
+						AddChild(GlyphSprite);
                     }
                     else if (!GlyphCache.ContainsKey(Text[i]))
                     {
