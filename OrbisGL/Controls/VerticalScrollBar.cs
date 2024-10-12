@@ -119,7 +119,7 @@ namespace OrbisGL.Controls
 
             ButtonDown = true;
             ButtonDownClickY = EventArgs.Position.Y;
-            ButtonDownBarY = SlimBar.Position.Y;
+            ButtonDownBarY = SlimBar.Position.Y - BarMargin;
             EventArgs.Handled = true;
         }
         private void ScrollBar_OnMouseButtonUp(object Sender, ClickEventArgs EventArgs)
