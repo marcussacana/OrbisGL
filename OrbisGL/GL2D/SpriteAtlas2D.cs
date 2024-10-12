@@ -587,7 +587,6 @@ namespace OrbisGL.GL2D
 
             return FrameName.Substring(0, FrameName.Length - Sufix.Length).Trim();
         }
-
         public override void Dispose()
         {
             if (!AllowTexDisposal)

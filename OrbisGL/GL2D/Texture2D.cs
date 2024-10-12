@@ -7,6 +7,9 @@ using static OrbisGL.GL2D.Coordinates2D;
 
 namespace OrbisGL.GL2D
 {
+    /// <summary>
+    /// A class draw an 2D <see cref="OrbisGL.GL.Texture"/> object to the screen
+    /// </summary>
     public class Texture2D : GLObject2D
     {
         int TextureUniformLocation;

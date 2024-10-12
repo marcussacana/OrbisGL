@@ -2,7 +2,7 @@
 
 namespace OrbisGL.Controls.Events
 {
-    public delegate void ClickEvent(object Sender, ClickEventArgs EventArgs);
+    public delegate void ClickEvent(object Sender, ClickEventArgs Args);
     public class ClickEventArgs : PropagableEventArgs
     {
         public MouseButtons Type { get; }

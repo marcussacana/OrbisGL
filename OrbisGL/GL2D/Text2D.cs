@@ -6,10 +6,12 @@ using SharpGLES;
 using OrbisGL.GL;
 using OrbisGL.FreeTypeLib;
 using static OrbisGL.GL2D.Coordinates2D;
-using SixLabors.ImageSharp.Processing;
 
 namespace OrbisGL.GL2D
 {
+    /// <summary>
+    /// A 2D Text Object with rendering based on freetype font
+    /// </summary>
     public unsafe class Text2D : GLObject2D
     {
         Texture FontTexture;
