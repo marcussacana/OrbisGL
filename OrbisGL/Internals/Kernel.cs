@@ -112,7 +112,7 @@ namespace Orbis.Internals
         [DllImport("libkernel.sprx")]
         public static extern void sceKernelUsleep(uint MicroSecond);
 
-        [DllImport("libSceRtc.srpx")]
+        [DllImport("libSceRtc.sprx")]
         public static extern int sceRtcGetCurrentTick(out long CurrentTick);
 
         public const int PROT_READ = 1;
